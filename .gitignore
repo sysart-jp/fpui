@@ -1,0 +1,26 @@
+*.class
+*.log
+
+# sbt specific
+.cache
+.cache-main
+.cache-tests
+.history
+.lib/
+dist/*
+target/
+lib_managed/
+src_managed/
+project/boot/
+project/plugins/project/
+
+# Node.js
+node_modules/
+
+# VSCode and Metals
+# https://scalameta.org/metals/docs/editors/vscode.html#files-and-directories-to-include-in-your-gitignore
+.vscode/
+.metals/
+.bloop/
+.ammonite/
+metals.sbt
