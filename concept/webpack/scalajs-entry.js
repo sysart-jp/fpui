@@ -1,13 +1,13 @@
 if (process.env.NODE_ENV === "production") {
-    const opt = require("./functional-ui-opt.js");
+    const opt = require("./concept-opt.js");
     opt.main();
     module.exports = opt;
 } else {
     var exports = window;
-    exports.require = require("./functional-ui-fastopt-entrypoint.js").require;
+    exports.require = require("./concept-fastopt-entrypoint.js").require;
     window.global = window;
 
-    const fastOpt = require("./functional-ui-fastopt.js");
+    const fastOpt = require("./concept-fastopt.js");
     fastOpt.main()
     module.exports = fastOpt;
 
