@@ -10,13 +10,255 @@ import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.hot
 import slinky.web.html._
+import org.scalajs.dom.raw.HTMLElement
+import scala.scalajs.js.annotation.JSImport
+
+@JSImport("resources/index.css", JSImport.Default)
+@js.native
+object IndexCSS extends js.Object
 
 object Main {
-  case class Model(messages: Seq[String], input: String)
+
+  //
+  // MODEL
+  //
+
+  case class Model(
+      entries: Seq[Entry],
+      taskInput: String,
+      uid: Int,
+      visibility: String
+  )
+
+  case class Entry(
+      description: String,
+      completed: Boolean,
+      editing: Boolean,
+      id: Int
+  )
+
+  def emptyModel(): Model =
+    Model(
+      entries = Seq.empty,
+      taskInput = "",
+      uid = 0,
+      visibility = "All"
+    )
+
+  def newEntry(description: String, id: Int): Entry =
+    Entry(
+      description = description,
+      completed = false,
+      editing = false,
+      id = id
+    )
+
+  def init(): (Model, FUI.Effect[Msg]) = (emptyModel(), FUI.noEffect)
+
+  //
+  // UPDATE
+  //
 
   sealed trait Msg
-  case class Input(input: String) extends Msg
-  case object Send extends Msg
+  case object Add extends Msg
+  case class UpdateInput(input: String) extends Msg
+  case class EditingEntry(id: Int, isEditing: Boolean) extends Msg
+  case class UpdateEntry(id: Int, description: String) extends Msg
+  case class Delete(id: Int) extends Msg
+  case object DeleteComplete extends Msg
+  case class Check(id: Int, isCompleted: Boolean) extends Msg
+  case class CheckAll(isCompleted: Boolean) extends Msg
+  case class ChangeVisibility(visibility: String) extends Msg
+
+  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
+    msg match {
+      case Add =>
+        (
+          model.copy(
+            uid = model.uid + 1,
+            taskInput = "",
+            entries =
+              if (model.taskInput.trim().isEmpty())
+                model.entries
+              else
+                model.entries :+ newEntry(model.taskInput, model.uid)
+          ),
+          FUI.noEffect
+        )
+
+      case UpdateInput(input) => (model.copy(taskInput = input), FUI.noEffect)
+
+      case EditingEntry(id, isEditing) =>
+        (
+          model.copy(entries =
+            model.entries.map(e =>
+              if (e.id == id) e.copy(editing = isEditing) else e
+            )
+          ),
+          dispatch =>
+            dom.document.getElementById("todo-" + id) match {
+              case element: HTMLElement => element.focus()
+              case _                    => ()
+            }
+        )
+
+      case UpdateEntry(id, description) =>
+        (
+          model.copy(entries =
+            model.entries.map(e =>
+              if (e.id == id) e.copy(description = description) else e
+            )
+          ),
+          FUI.noEffect
+        )
+
+      case Delete(id) =>
+        (
+          model.copy(entries = model.entries.filterNot(_.id == id)),
+          FUI.noEffect
+        )
+
+      case DeleteComplete =>
+        (
+          model.copy(entries = model.entries.filterNot(_.completed)),
+          FUI.noEffect
+        )
+
+      case Check(id, isCompleted) =>
+        (
+          model.copy(entries =
+            model.entries.map(e =>
+              if (e.id == id) e.copy(completed = isCompleted) else e
+            )
+          ),
+          FUI.noEffect
+        )
+
+      case CheckAll(isCompleted) =>
+        (
+          model.copy(entries =
+            model.entries.map(_.copy(completed = isCompleted))
+          ),
+          FUI.noEffect
+        )
+
+      case ChangeVisibility(visibility) =>
+        (model.copy(visibility = visibility), FUI.noEffect)
+    }
+  }
+
+  //
+  // VIEW
+  //
+
+  val css = IndexCSS
+
+  def view(model: Model, dispatch: Msg => Unit): ReactElement = {
+    div(className := "todomvc-wrapper")(
+      section(className := "todoapp")(
+        viewInput(model.taskInput, dispatch),
+        viewEntries(model.entries, model.visibility, dispatch)
+      ),
+      infoFooter()
+    )
+  }
+
+  def viewInput(taskInput: String, dispatch: Msg => Unit): ReactElement = {
+    header(className := "header")(
+      h1("todos"),
+      input(
+        className := "new-todo",
+        placeholder := "What needs to be done?",
+        autoFocus := true,
+        value := taskInput,
+        name := "newTodo",
+        onInput := ((e) => dispatch(UpdateInput(e.target.value))),
+        onKeyDown := ((e) => {
+          if (e.keyCode == 13) dispatch(Add) else ()
+        })
+      )
+    )
+  }
+
+  def viewEntries(
+      entries: Seq[Entry],
+      visibility: String,
+      dispatch: Msg => Unit
+  ): ReactElement = {
+    val allCompleted = entries.forall(_.completed)
+    val cssVisibility = if (entries.isEmpty) "hidden" else "visible"
+
+    def isVisible(entry: Entry) =
+      visibility match {
+        case "Completed" => entry.completed
+        case "Active"    => !entry.completed
+        case _           => true
+      }
+
+    section(
+      className := "main",
+      style := js.Dynamic.literal(visibility = cssVisibility)
+    )(
+      input(
+        className := "toggle-all",
+        id := "toggle-all",
+        `type` := "checkbox",
+        name := "toggle",
+        checked := allCompleted,
+        onClick := ((e) => dispatch(CheckAll(!allCompleted)))
+      ),
+      label(htmlFor := "toggle-all")("Mark all as complete"),
+      ul(className := "todo-list")(
+        entries.filter(isVisible(_)).map(entry => viewEntry(entry, dispatch))
+      )
+    )
+  }
+
+  def viewEntry(entry: Entry, dispatch: Msg => Unit): ReactElement = {
+    li(
+      className := optionalClasses(
+        Seq(("completed", entry.completed), ("editing", entry.editing))
+      ),
+      key := entry.id.toString()
+    )(
+      div(className := "view")(
+        input(
+          className := "toggle",
+          `type` := "checkbox",
+          checked := entry.completed,
+          onClick := ((e) => dispatch(Check(entry.id, !entry.completed)))
+        ),
+        label(onDoubleClick := ((e) => dispatch(EditingEntry(entry.id, true))))(
+          entry.description
+        ),
+        button(
+          className := "destroy",
+          onClick := ((e) => dispatch(Delete(entry.id)))
+        )
+      ),
+      input(
+        className := "edit",
+        value := entry.description,
+        name := "title",
+        id := "todo-" + entry.id,
+        onInput := ((e) => dispatch(UpdateEntry(entry.id, e.target.value))),
+        onBlur := ((e) => dispatch(EditingEntry(entry.id, false))),
+        onKeyDown := ((e) => {
+          if (e.keyCode == 13) dispatch(EditingEntry(entry.id, false)) else ()
+        })
+      )
+    )
+  }
+
+  def infoFooter(): ReactElement = {
+    footer(className := "info")(
+      p("Double-click to edit a todo")
+    )
+  }
+
+  def optionalClasses(classes: Seq[(String, Boolean)]): String = {
+    classes.filter(_._2).map(_._1).mkString(" ")
+  }
 
   def main(args: Array[String]): Unit = {
     if (LinkingInfo.developmentMode) {
@@ -27,35 +269,5 @@ object Main {
       dom.document.getElementById("root"),
       FUI.Program(init, view, update)
     )
-  }
-
-  def init(): (Model, FUI.Effect[Msg]) = (Model(Seq.empty, ""), FUI.noEffect)
-
-  def view(model: Model, dispatch: Msg => Unit): ReactElement = {
-    div(className := "app")(
-      h1(className := "app-title")("Functional UI example"),
-      div(className := "message-input")(
-        input(
-          value := model.input,
-          onInput := ((e) => dispatch(Input(e.target.value)))
-        ),
-        button(onClick := ((e) => dispatch(Send)))("Send")
-      ),
-      div(className := "messages")(
-        model.messages.map(message => div(className := "message")(message))
-      )
-    )
-  }
-
-  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
-    msg match {
-      case Input(input) =>
-        (model.copy(input = input), FUI.noEffect)
-      case Send =>
-        (
-          model.copy(messages = model.messages :+ model.input, input = ""),
-          FUI.noEffect
-        )
-    }
   }
 }
