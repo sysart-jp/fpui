@@ -47,3 +47,13 @@ addCommandAlias(
   "conceptDev",
   ";concept/fastOptJS::startWebpackDevServer;~concept/fastOptJS"
 )
+
+lazy val exampleTodo = (project in file("examples/todo"))
+  .enablePlugins(ScalaJSBundlerPlugin)
+  .settings(commonSettings)
+  .dependsOn(concept)
+
+addCommandAlias(
+  "todoDev",
+  ";exampleTodo/fastOptJS::startWebpackDevServer;~exampleTodo/fastOptJS"
+)
