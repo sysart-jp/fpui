@@ -1,46 +1,13 @@
 package jp.sysart.fpui
 
 import scala.scalajs.js
-import scala.scalajs.js.annotation.{JSExportTopLevel, JSImport}
 import scala.scalajs.LinkingInfo
 import org.scalajs.dom
-import org.scalajs.dom.Element
 
 import slinky.core._
 import slinky.core.facade.ReactElement
-import slinky.web.ReactDOM
 import slinky.hot
 import slinky.web.html._
-
-object FunctionalUI {
-  type Effect[Msg] = (Msg => Unit) => Unit
-
-  case class Program[Model, Msg](
-      init: () => (Model, Effect[Msg]),
-      view: (Model, Msg => Unit) => ReactElement,
-      update: (Msg, Model) => (Model, Effect[Msg])
-  )
-
-  class Runtime[Model, Msg](container: Element, program: Program[Model, Msg]) {
-    private val init = program.init()
-    private var state = init._1
-
-    def dispatch(msg: Msg): Unit = {
-      apply(program.update(msg, state))
-    }
-
-    def apply(change: (Model, Effect[Msg])): Unit = {
-      val (model, effect) = change
-      state = model
-      effect(dispatch)
-      ReactDOM.render(program.view(model, dispatch), container)
-    }
-
-    apply(init)
-  }
-
-  def noEffect[Msg]() = (dispatch: Msg => Unit) => ()
-}
 
 object Main {
   case class Model(messages: Seq[String], input: String)
@@ -48,6 +15,17 @@ object Main {
   sealed trait Msg
   case class Input(input: String) extends Msg
   case object Send extends Msg
+
+  def main(args: Array[String]): Unit = {
+    if (LinkingInfo.developmentMode) {
+      hot.initialize()
+    }
+
+    new FunctionalUI.Runtime(
+      dom.document.getElementById("root"),
+      FunctionalUI.Program(init, view, update)
+    )
+  }
 
   def init(): (Model, FunctionalUI.Effect[Msg]) =
     (Model(Seq.empty, ""), FunctionalUI.noEffect)
@@ -78,17 +56,5 @@ object Main {
           FunctionalUI.noEffect
         )
     }
-  }
-
-  @JSExportTopLevel("main")
-  def main(): Unit = {
-    if (LinkingInfo.developmentMode) {
-      hot.initialize()
-    }
-
-    new FunctionalUI.Runtime(
-      dom.document.getElementById("root"),
-      FunctionalUI.Program(init, view, update)
-    )
   }
 }

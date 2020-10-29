@@ -23,6 +23,7 @@ lazy val commonSettings = Seq(
   scalacOptions += "-Ymacro-annotations",
   version in webpack := "4.43.0",
   version in startWebpackDevServer := "3.11.0",
+  scalaJSUseMainModuleInitializer := true,
   webpackResources := baseDirectory.value / "webpack" * "*",
   webpackConfigFile in fastOptJS := Some(
     baseDirectory.value / "webpack" / "webpack-fastopt.config.js"
