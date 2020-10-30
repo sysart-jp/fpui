@@ -6,11 +6,14 @@ import scala.scalajs.LinkingInfo
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSImport
 import org.scalajs.dom
+import org.scalajs.dom.experimental.URL
 
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.hot
 import slinky.web.html._
+
+import trail._
 
 @JSImport("resources/index.css", JSImport.Default)
 @js.native
@@ -19,12 +22,20 @@ object IndexCSS extends js.Object
 object Main {
 
   //
+  // ROUTE
+  //
+
+  object Route {
+    val book = Root / "book" / Arg[Int]
+  }
+
+  //
   // MODEL
   //
 
   case class Model(messages: Seq[String], input: String)
 
-  def init(): (Model, FUI.Effect[Msg]) =
+  def init(url: URL): (Model, FUI.Effect[Msg]) =
     (Model(Seq.empty, ""), FUI.noEffect)
 
   //

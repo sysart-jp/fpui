@@ -8,6 +8,7 @@ import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.hot
 import slinky.web.html._
+import org.scalajs.dom.experimental.URL
 
 object Main {
 
@@ -17,7 +18,7 @@ object Main {
 
   case class Model(messages: Seq[String], input: String)
 
-  def init(): (Model, FunctionalUI.Effect[Msg]) =
+  def init(url: URL): (Model, FunctionalUI.Effect[Msg]) =
     (Model(Seq.empty, ""), FunctionalUI.noEffect)
 
   //

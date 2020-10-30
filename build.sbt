@@ -60,7 +60,12 @@ addCommandAlias(
 
 lazy val exampleMultipage = (project in file("examples/multipage"))
   .enablePlugins(ScalaJSBundlerPlugin)
-  .settings(commonSettings)
+  .settings(
+    commonSettings,
+    libraryDependencies ++= Seq(
+      "tech.sparse" %%% "trail" % "0.3.0"
+    )
+  )
   .dependsOn(concept)
 
 addCommandAlias(

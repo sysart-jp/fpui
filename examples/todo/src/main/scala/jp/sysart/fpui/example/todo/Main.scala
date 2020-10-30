@@ -7,12 +7,13 @@ import scala.scalajs.js
 import scala.scalajs.js.timers._
 import scala.scalajs.js.annotation.JSImport
 import org.scalajs.dom
+import org.scalajs.dom.raw.HTMLElement
+import org.scalajs.dom.experimental.URL
 
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.hot
 import slinky.web.html._
-import org.scalajs.dom.raw.HTMLElement
 
 @JSImport("resources/index.css", JSImport.Default)
 @js.native
@@ -54,7 +55,7 @@ object Main {
       id = id
     )
 
-  def init(): (Model, FUI.Effect[Msg]) = (emptyModel(), FUI.noEffect)
+  def init(url: URL): (Model, FUI.Effect[Msg]) = (emptyModel(), FUI.noEffect)
 
   //
   // UPDATE
