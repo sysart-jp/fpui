@@ -38,16 +38,14 @@ object Book {
 
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
     msg match {
-      case BookFetched(result) =>
-        result match {
-          case Right(book) =>
-            (model.copy(loading = false, book = Some(book)), FUI.noEffect)
-          case Left(error) =>
-            (
-              model.copy(loading = false, loadingError = Some(error)),
-              FUI.noEffect
-            )
-        }
+      case BookFetched(Right(book)) =>
+        (model.copy(loading = false, book = Some(book)), FUI.noEffect)
+
+      case BookFetched(Left(error)) =>
+        (
+          model.copy(loading = false, loadingError = Some(error)),
+          FUI.noEffect
+        )
     }
 
   //
