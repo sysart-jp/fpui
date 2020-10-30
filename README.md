@@ -33,3 +33,13 @@ $ sbt conceptDev
 ```
 $ sbt todoDev
 ```
+
+### 実装例: Multipage
+
+* アプリケーションを複数の `Page` に分解する例。
+* 各ページへの routing。
+* [examples/multipage/src/main/scala/jp/sysart/fpui/example/multipage/Main.scala](examples/multipage/src/main/scala/jp/sysart/fpui/example/multipage/Main.scala)
+
+```
+$ sbt multipageDev
+```
