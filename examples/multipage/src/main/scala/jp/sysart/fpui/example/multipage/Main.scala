@@ -43,12 +43,10 @@ object Main {
   def init(url: URL): (Model, FUI.Effect[Msg]) =
     url.pathname match {
       case Route.book(id) => {
-        val (submodel, subeffect) = BookPage.init(id)
-        (
-          Model(BookPg(submodel)),
-          dispatch => {
-            subeffect(submsg => dispatch(BookPageMsg(submsg)))
-          }
+        wrapPageUpdate(
+          BookPage.init(id),
+          (pageModel: BookPage.Model) => Model(BookPg(pageModel)),
+          BookPageMsg
         )
       }
     }
@@ -65,6 +63,18 @@ object Main {
       case BookPageMsg(submsg) =>
         (model, FUI.noEffect)
     }
+  }
+
+  def wrapPageUpdate[PageModel, PageMsg](
+      pageUpdate: (PageModel, FUI.Effect[PageMsg]),
+      wrapModel: PageModel => Model,
+      wrapMsg: PageMsg => Msg
+  ): (Model, FUI.Effect[Msg]) = {
+    val (pageModel, pageEffect) = pageUpdate
+    (
+      wrapModel(pageModel),
+      dispatch => pageEffect(pageMsg => dispatch(wrapMsg(pageMsg)))
+    )
   }
 
   //
