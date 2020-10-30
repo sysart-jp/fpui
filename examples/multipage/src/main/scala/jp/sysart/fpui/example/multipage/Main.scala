@@ -30,6 +30,23 @@ object Main {
     val book = Root / "book" / Arg[Int]
   }
 
+  def applyUrlChange(url: URL): (Model, FUI.Effect[Msg]) =
+    url.pathname match {
+      case Route.book(id) =>
+        applySubUpdate(
+          BookPage.init(id),
+          (m: BookPage.Model) => Model(BookPg(m)),
+          BookPageMsg
+        )
+
+      case _ =>
+        applySubUpdate(
+          SearchPage.init(),
+          (m: SearchPage.Model) => Model(SearchPg(m)),
+          SearchPageMsg
+        )
+    }
+
   //
   // MODEL
   //
@@ -37,43 +54,48 @@ object Main {
   case class Model(page: Page)
 
   sealed trait Page
-  case class SearchPg() extends Page
+  case class SearchPg(model: SearchPage.Model) extends Page
   case class BookPg(model: BookPage.Model) extends Page
 
-  def init(url: URL): (Model, FUI.Effect[Msg]) =
-    url.pathname match {
-      case Route.book(id) => {
-        wrapPageUpdate(
-          BookPage.init(id),
-          (pageModel: BookPage.Model) => Model(BookPg(pageModel)),
-          BookPageMsg
-        )
-      }
-    }
+  def init(url: URL): (Model, FUI.Effect[Msg]) = applyUrlChange(url)
 
   //
   // UPDATE
   //
 
   sealed trait Msg
+  case class SearchPageMsg(submsg: SearchPage.Msg) extends Msg
   case class BookPageMsg(submsg: BookPage.Msg) extends Msg
 
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
-    msg match {
-      case BookPageMsg(submsg) =>
-        (model, FUI.noEffect)
+    (msg, model.page) match {
+      case (SearchPageMsg(pageMsg), SearchPg(pageModel)) =>
+        applySubUpdate(
+          SearchPage.update(pageMsg, pageModel),
+          (m: SearchPage.Model) => model.copy(page = SearchPg(m)),
+          SearchPageMsg
+        )
+
+      case (BookPageMsg(pageMsg), BookPg(pageModel)) =>
+        applySubUpdate(
+          BookPage.update(pageMsg, pageModel),
+          (m: BookPage.Model) => model.copy(page = BookPg(m)),
+          BookPageMsg
+        )
+
+      case _ => (model, FUI.noEffect)
     }
   }
 
-  def wrapPageUpdate[PageModel, PageMsg](
-      pageUpdate: (PageModel, FUI.Effect[PageMsg]),
-      wrapModel: PageModel => Model,
-      wrapMsg: PageMsg => Msg
+  def applySubUpdate[SubModel, SubMsg](
+      subUpdate: (SubModel, FUI.Effect[SubMsg]),
+      applyModel: SubModel => Model,
+      applyMsg: SubMsg => Msg
   ): (Model, FUI.Effect[Msg]) = {
-    val (pageModel, pageEffect) = pageUpdate
+    val (subModel, subEffect) = subUpdate
     (
-      wrapModel(pageModel),
-      dispatch => pageEffect(pageMsg => dispatch(wrapMsg(pageMsg)))
+      applyModel(subModel),
+      dispatch => subEffect(subMsg => dispatch(applyMsg(subMsg)))
     )
   }
 
