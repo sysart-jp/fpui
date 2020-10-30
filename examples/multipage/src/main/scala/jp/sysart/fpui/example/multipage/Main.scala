@@ -2,11 +2,15 @@ package jp.sysart.fpui.example.multipage
 
 import jp.sysart.fpui.{FunctionalUI => FUI}
 
+import scala.util.Success
+import scala.util.Failure
+
 import scala.scalajs.LinkingInfo
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSImport
 import org.scalajs.dom
 import org.scalajs.dom.experimental.URL
+import org.scalajs.dom.ext.Ajax
 
 import slinky.core._
 import slinky.core.facade.ReactElement
@@ -14,6 +18,11 @@ import slinky.hot
 import slinky.web.html._
 
 import trail._
+
+import io.circe._
+import io.circe.generic.auto._
+import io.circe.parser._
+import io.circe.syntax._
 
 @JSImport("resources/index.css", JSImport.Default)
 @js.native
@@ -82,6 +91,23 @@ object Main {
     if (LinkingInfo.developmentMode) {
       hot.initialize()
     }
+
+    implicit val ec = scala.concurrent.ExecutionContext.global
+    Ajax
+      .get(
+        "https://reststop.randomhouse.com/resources/works/118711/",
+        null,
+        0,
+        Map("Accept" -> "application/json")
+      )
+      .onComplete {
+        case Success(response) => {
+          implicit val decoderBook = Domain.decoderBook
+          val book = decode[Domain.Book](response.responseText)
+          println("book: " + book)
+        }
+        case Failure(t) => ()
+      }
 
     new FUI.Runtime(
       dom.document.getElementById("root"),

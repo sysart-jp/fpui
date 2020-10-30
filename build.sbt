@@ -58,12 +58,16 @@ addCommandAlias(
   ";exampleTodo/fastOptJS::startWebpackDevServer;~exampleTodo/fastOptJS"
 )
 
+val circeVersion = "0.13.0"
 lazy val exampleMultipage = (project in file("examples/multipage"))
   .enablePlugins(ScalaJSBundlerPlugin)
   .settings(
     commonSettings,
     libraryDependencies ++= Seq(
-      "tech.sparse" %%% "trail" % "0.3.0"
+      "tech.sparse" %%% "trail" % "0.3.0",
+      "io.circe" %%% "circe-core" % circeVersion,
+      "io.circe" %%% "circe-generic" % circeVersion,
+      "io.circe" %%% "circe-parser" % circeVersion
     )
   )
   .dependsOn(concept)
