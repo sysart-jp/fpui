@@ -34,28 +34,36 @@ object Main {
   // MODEL
   //
 
-  case class Model(messages: Seq[String], input: String)
+  case class Model(page: Page)
+
+  sealed trait Page
+  case class SearchPg() extends Page
+  case class BookPg(model: BookPage.Model) extends Page
 
   def init(url: URL): (Model, FUI.Effect[Msg]) =
-    (Model(Seq.empty, ""), FUI.noEffect)
+    url.pathname match {
+      case Route.book(id) => {
+        val (submodel, subeffect) = BookPage.init(id)
+        (
+          Model(BookPg(submodel)),
+          dispatch => {
+            subeffect(submsg => dispatch(BookPageMsg(submsg)))
+          }
+        )
+      }
+    }
 
   //
   // UPDATE
   //
 
   sealed trait Msg
-  case class Input(input: String) extends Msg
-  case object Send extends Msg
+  case class BookPageMsg(submsg: BookPage.Msg) extends Msg
 
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
     msg match {
-      case Input(input) =>
-        (model.copy(input = input), FUI.noEffect)
-      case Send =>
-        (
-          model.copy(messages = model.messages :+ model.input, input = ""),
-          FUI.noEffect
-        )
+      case BookPageMsg(submsg) =>
+        (model, FUI.noEffect)
     }
   }
 
@@ -65,17 +73,7 @@ object Main {
 
   def view(model: Model, dispatch: Msg => Unit): ReactElement = {
     div(className := "app")(
-      h1(className := "app-title")("Multipage example"),
-      div(className := "message-input")(
-        input(
-          value := model.input,
-          onInput := ((e) => dispatch(Input(e.target.value)))
-        ),
-        button(onClick := ((e) => dispatch(Send)))("Send")
-      ),
-      div(className := "messages")(
-        model.messages.map(message => div(className := "message")(message))
-      )
+      h1(className := "app-title")("Multipage example")
     )
   }
 
