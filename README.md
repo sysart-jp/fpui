@@ -15,9 +15,21 @@
 
 ## How to Run
 
-The following command runs the app in development mode with hot-reloading enabled.
-Open http://localhost:8080 to see your app.
+以下、サブプロジェクトごとに用意されたコマンドで、アプリケーションを開発モードで起動できる（コードへの修正は hot-reloading される）。起動後、http://localhost:8080 にアクセス。
+
+### Hello world
+
+* [concept/src/main/scala/jp/sysart/fpui/Main.scala](concept/src/main/scala/jp/sysart/fpui/Main.scala)
 
 ```
-$ sbt dev
+$ sbt conceptDev
+```
+
+### 実装例: ToDo
+
+* <http://todomvc.com/> と同じものを `FunctionalUI` で実装。
+* [examples/todo/src/main/scala/jp/sysart/fpui/example/todo/Main.scala](examples/todo/src/main/scala/jp/sysart/fpui/example/todo/Main.scala)
+
+```
+$ sbt todoDev
 ```
