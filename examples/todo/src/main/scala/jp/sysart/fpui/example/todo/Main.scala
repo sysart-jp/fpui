@@ -2,8 +2,10 @@ package jp.sysart.fpui.example.todo
 
 import jp.sysart.fpui.{FunctionalUI => FUI}
 
-import scala.scalajs.js
 import scala.scalajs.LinkingInfo
+import scala.scalajs.js
+import scala.scalajs.js.timers._
+import scala.scalajs.js.annotation.JSImport
 import org.scalajs.dom
 
 import slinky.core._
@@ -11,7 +13,6 @@ import slinky.core.facade.ReactElement
 import slinky.hot
 import slinky.web.html._
 import org.scalajs.dom.raw.HTMLElement
-import scala.scalajs.js.annotation.JSImport
 
 @JSImport("resources/index.css", JSImport.Default)
 @js.native
@@ -97,7 +98,7 @@ object Main {
           ),
           dispatch =>
             dom.document.getElementById("todo-" + id) match {
-              case element: HTMLElement => element.focus()
+              case element: HTMLElement => setTimeout(100) { element.focus() }
               case _                    => ()
             }
         )

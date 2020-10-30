@@ -24,8 +24,8 @@ object FunctionalUI {
     def apply(change: (Model, Effect[Msg])): Unit = {
       val (model, effect) = change
       state = model
-      effect(dispatch)
       ReactDOM.render(program.view(model, dispatch), container)
+      effect(dispatch)
     }
 
     apply(init)
