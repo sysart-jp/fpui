@@ -1,13 +1,14 @@
-package jp.sysart.fpui.example.multipage
+package jp.sysart.fpui.example.multipage.page
 
 import jp.sysart.fpui.{FunctionalUI => FUI}
-import jp.sysart.fpui.example.multipage.Domain.Book
+import jp.sysart.fpui.example.multipage.Domain
+import jp.sysart.fpui.example.multipage.Server
 
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 
-object BookPage {
+object Book {
 
   //
   // MODEL
@@ -17,7 +18,7 @@ object BookPage {
       workId: Int,
       loading: Boolean,
       loadingError: Option[Throwable],
-      book: Option[Book]
+      book: Option[Domain.Book]
   )
 
   def init(workId: Int): (Model, FUI.Effect[Msg]) =
@@ -33,9 +34,9 @@ object BookPage {
   //
 
   sealed trait Msg
-  case class BookFetched(result: Either[Throwable, Book]) extends Msg
+  case class BookFetched(result: Either[Throwable, Domain.Book]) extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
+  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
     msg match {
       case BookFetched(result) =>
         result match {
@@ -48,7 +49,6 @@ object BookPage {
             )
         }
     }
-  }
 
   //
   // VIEW

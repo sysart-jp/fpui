@@ -1,4 +1,4 @@
-package jp.sysart.fpui.example.multipage
+package jp.sysart.fpui.example.multipage.page
 
 import jp.sysart.fpui.{FunctionalUI => FUI}
 
@@ -6,7 +6,7 @@ import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 
-object SearchPage {
+object Search {
 
   //
   // MODEL

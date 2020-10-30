@@ -34,15 +34,15 @@ object Main {
     url.pathname match {
       case Route.book(id) =>
         applySubUpdate(
-          BookPage.init(id),
-          (m: BookPage.Model) => Model(BookPg(m)),
+          page.Book.init(id),
+          BookPage.andThen(Model),
           BookPageMsg
         )
 
       case _ =>
         applySubUpdate(
-          SearchPage.init(),
-          (m: SearchPage.Model) => Model(SearchPg(m)),
+          page.Search.init(),
+          SearchPage.andThen(Model),
           SearchPageMsg
         )
     }
@@ -51,11 +51,11 @@ object Main {
   // MODEL
   //
 
-  case class Model(page: Page)
+  case class Model(currentPage: Page)
 
   sealed trait Page
-  case class SearchPg(model: SearchPage.Model) extends Page
-  case class BookPg(model: BookPage.Model) extends Page
+  case class SearchPage(pageModel: page.Search.Model) extends Page
+  case class BookPage(pageModel: page.Book.Model) extends Page
 
   def init(url: URL): (Model, FUI.Effect[Msg]) = applyUrlChange(url)
 
@@ -64,28 +64,27 @@ object Main {
   //
 
   sealed trait Msg
-  case class SearchPageMsg(submsg: SearchPage.Msg) extends Msg
-  case class BookPageMsg(submsg: BookPage.Msg) extends Msg
+  case class SearchPageMsg(pageMsg: page.Search.Msg) extends Msg
+  case class BookPageMsg(pageMsg: page.Book.Msg) extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
-    (msg, model.page) match {
-      case (SearchPageMsg(pageMsg), SearchPg(pageModel)) =>
+  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
+    (msg, model.currentPage) match {
+      case (SearchPageMsg(pageMsg), SearchPage(pageModel)) =>
         applySubUpdate(
-          SearchPage.update(pageMsg, pageModel),
-          (m: SearchPage.Model) => model.copy(page = SearchPg(m)),
+          page.Search.update(pageMsg, pageModel),
+          (m: page.Search.Model) => model.copy(currentPage = SearchPage(m)),
           SearchPageMsg
         )
 
-      case (BookPageMsg(pageMsg), BookPg(pageModel)) =>
+      case (BookPageMsg(pageMsg), BookPage(pageModel)) =>
         applySubUpdate(
-          BookPage.update(pageMsg, pageModel),
-          (m: BookPage.Model) => model.copy(page = BookPg(m)),
+          page.Book.update(pageMsg, pageModel),
+          (m: page.Book.Model) => model.copy(currentPage = BookPage(m)),
           BookPageMsg
         )
 
       case _ => (model, FUI.noEffect)
     }
-  }
 
   def applySubUpdate[SubModel, SubMsg](
       subUpdate: (SubModel, FUI.Effect[SubMsg]),
