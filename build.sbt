@@ -57,3 +57,13 @@ addCommandAlias(
   "todoDev",
   ";exampleTodo/fastOptJS::startWebpackDevServer;~exampleTodo/fastOptJS"
 )
+
+lazy val exampleMultipage = (project in file("examples/multipage"))
+  .enablePlugins(ScalaJSBundlerPlugin)
+  .settings(commonSettings)
+  .dependsOn(concept)
+
+addCommandAlias(
+  "multipageDev",
+  ";exampleMultipage/fastOptJS::startWebpackDevServer;~exampleMultipage/fastOptJS"
+)

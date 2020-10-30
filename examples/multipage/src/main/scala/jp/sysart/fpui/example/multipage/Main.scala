@@ -1,13 +1,20 @@
-package jp.sysart.fpui
+package jp.sysart.fpui.example.multipage
 
-import scala.scalajs.js
+import jp.sysart.fpui.{FunctionalUI => FUI}
+
 import scala.scalajs.LinkingInfo
+import scala.scalajs.js
+import scala.scalajs.js.annotation.JSImport
 import org.scalajs.dom
 
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.hot
 import slinky.web.html._
+
+@JSImport("resources/index.css", JSImport.Default)
+@js.native
+object IndexCSS extends js.Object
 
 object Main {
 
@@ -17,8 +24,8 @@ object Main {
 
   case class Model(messages: Seq[String], input: String)
 
-  def init(): (Model, FunctionalUI.Effect[Msg]) =
-    (Model(Seq.empty, ""), FunctionalUI.noEffect)
+  def init(): (Model, FUI.Effect[Msg]) =
+    (Model(Seq.empty, ""), FUI.noEffect)
 
   //
   // UPDATE
@@ -28,14 +35,14 @@ object Main {
   case class Input(input: String) extends Msg
   case object Send extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FunctionalUI.Effect[Msg]) = {
+  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
     msg match {
       case Input(input) =>
-        (model.copy(input = input), FunctionalUI.noEffect)
+        (model.copy(input = input), FUI.noEffect)
       case Send =>
         (
           model.copy(messages = model.messages :+ model.input, input = ""),
-          FunctionalUI.noEffect
+          FUI.noEffect
         )
     }
   }
@@ -46,7 +53,7 @@ object Main {
 
   def view(model: Model, dispatch: Msg => Unit): ReactElement = {
     div(className := "app")(
-      h1(className := "app-title")("Hello, Functional UI!"),
+      h1(className := "app-title")("Multipage example"),
       div(className := "message-input")(
         input(
           value := model.input,
@@ -65,9 +72,9 @@ object Main {
       hot.initialize()
     }
 
-    new FunctionalUI.Runtime(
+    new FUI.Runtime(
       dom.document.getElementById("root"),
-      FunctionalUI.Program(init, view, update)
+      FUI.Program(init, view, update)
     )
   }
 }
