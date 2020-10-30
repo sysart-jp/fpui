@@ -157,7 +157,8 @@ object Main {
     div(className := "todomvc-wrapper")(
       section(className := "todoapp")(
         viewInput(model.taskInput, dispatch),
-        viewEntries(model.entries, model.visibility, dispatch)
+        viewEntries(model.entries, model.visibility, dispatch),
+        viewControls(model.entries, model.visibility, dispatch)
       ),
       infoFooter()
     )
@@ -248,6 +249,68 @@ object Main {
         })
       )
     )
+  }
+
+  def viewControls(
+      entries: Seq[Entry],
+      visibility: String,
+      dispatch: Msg => Unit
+  ): ReactElement = {
+    val entriesCompleted = entries.count(_.completed)
+    val entriesLeft = entries.size - entriesCompleted
+
+    footer(className := "footer", hidden := entries.isEmpty)(
+      viewControlsCount(entriesLeft),
+      viewControlsFilters(visibility, dispatch),
+      viewControlsClear(entriesCompleted, dispatch)
+    )
+  }
+
+  def viewControlsCount(entriesLeft: Int): ReactElement = {
+    span(className := "todo-count")(
+      strong(entriesLeft.toString()),
+      (if (entriesLeft == 1) " item" else " items") + " left"
+    )
+  }
+
+  def viewControlsFilters(
+      visibility: String,
+      dispatch: Msg => Unit
+  ): ReactElement = {
+    ul(className := "filters")(
+      visibilitySwap("#/", "All", visibility, dispatch),
+      " ",
+      visibilitySwap("#/active", "Active", visibility, dispatch),
+      " ",
+      visibilitySwap("#/completed", "Completed", visibility, dispatch)
+    )
+  }
+
+  def visibilitySwap(
+      uri: String,
+      visibility: String,
+      actualVisibility: String,
+      dispatch: Msg => Unit
+  ): ReactElement = {
+    li(onClick := ((e) => dispatch(ChangeVisibility(visibility))))(
+      a(
+        href := uri,
+        className := optionalClasses(
+          Seq(("selected", visibility == actualVisibility))
+        )
+      )(visibility)
+    )
+  }
+
+  def viewControlsClear(
+      entriesCompleted: Int,
+      dispatch: Msg => Unit
+  ): ReactElement = {
+    button(
+      className := "clear-completed",
+      hidden := (entriesCompleted == 0),
+      onClick := ((e) => dispatch(DeleteComplete))
+    )("Clear completed (" + entriesCompleted + ")")
   }
 
   def infoFooter(): ReactElement = {
