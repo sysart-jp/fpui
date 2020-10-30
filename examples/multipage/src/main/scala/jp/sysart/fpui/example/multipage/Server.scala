@@ -28,8 +28,8 @@ object Server {
     ajaxGet("https://reststop.randomhouse.com/resources/works/" + workId + "/")
       .onComplete {
         case Success(response) => {
-          val msg = createMsg(decode[Book](response.responseText))
-          dispatch(msg)
+          val decoded = decode[Book](response.responseText)
+          dispatch(createMsg(decoded))
         }
         case Failure(t) => {
           dispatch(createMsg(Left(t)))
