@@ -34,6 +34,7 @@ object Search {
   case object SendQuery extends Msg
   case class SearchResult(result: Either[Throwable, Seq[Domain.Book]])
       extends Msg
+  case class FoundItemClicked(workId: Int) extends Msg
 
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
     msg match {
@@ -63,6 +64,9 @@ object Search {
           model.copy(loading = false, loadingError = Some(error)),
           FUI.noEffect
         )
+
+      case FoundItemClicked(workId) =>
+        (model, (dispatch, browser) => browser.pushUrl("/book/" + workId))
     }
   }
 
@@ -84,7 +88,21 @@ object Search {
           onClick := ((e) => dispatch(SendQuery))
         )("Search")
       ),
-      div(className := "search-results")()
+      if (model.loading)
+        div(className := "loading")("Loading...")
+      else
+        div(className := "search-results")(
+          model.books.map(book =>
+            div(className := "found-item")(
+              a(
+                className := "title",
+                href := "#",
+                onClick := ((e) => dispatch(FoundItemClicked(book.workId)))
+              )(book.title),
+              div(className := "author")(book.author)
+            )
+          )
+        )
     )
   }
 }

@@ -68,15 +68,29 @@ div.search-query button {
   border-radius: 0 4px 4px 0;
 }
 
-div.author {
+div.search-results {
+  max-width: 450px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+div.found-item {
+  margin-top: 2rem;
+}
+
+div.found-item .title {
+  font-size: 20px;
+}
+
+div.book div.author {
   text-align: center;
 }
 
-div.about {
+div.book div.about {
   margin-top: 2rem;
   font-size: 14px;
 }
 
-div.copy {
+div.book div.copy {
   margin-top: 3rem;
 }
