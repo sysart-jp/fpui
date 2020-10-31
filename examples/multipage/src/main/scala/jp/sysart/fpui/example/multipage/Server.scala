@@ -23,8 +23,8 @@ object Server {
   def searchBooks[Msg](
       query: String,
       createMsg: Either[Throwable, Seq[Book]] => Msg,
-      browser: Browser,
-      dispatch: Msg => Unit
+      dispatch: Msg => Unit,
+      browser: Browser
   ): Unit = {
     val encodedQuery = URIUtils.encodeURIComponent(query)
     browser.ajaxGet(
@@ -38,8 +38,8 @@ object Server {
   def fetchBook[Msg](
       workId: Int,
       createMsg: Either[Throwable, Book] => Msg,
-      browser: Browser,
-      dispatch: Msg => Unit
+      dispatch: Msg => Unit,
+      browser: Browser
   ): Unit = {
     browser.ajaxGet(
       "https://reststop.randomhouse.com/resources/works/" + workId + "/",

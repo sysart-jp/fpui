@@ -102,8 +102,8 @@ object Main {
     val (subModel, subEffect) = subUpdate
     (
       applyModel(subModel),
-      (browser, dispatch) =>
-        subEffect(browser, subMsg => dispatch(applyMsg(subMsg)))
+      (dispatch, browser) =>
+        subEffect(subMsg => dispatch(applyMsg(subMsg)), browser)
     )
   }
 

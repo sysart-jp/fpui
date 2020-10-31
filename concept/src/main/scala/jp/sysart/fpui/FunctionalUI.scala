@@ -20,7 +20,7 @@ import io.circe.parser._
 import io.circe.syntax._
 
 object FunctionalUI {
-  type Effect[Msg] = (Browser, (Msg => Unit)) => Unit
+  type Effect[Msg] = ((Msg => Unit), Browser) => Unit
 
   case class Program[Model, Msg](
       init: (URL) => (Model, Effect[Msg]),
@@ -33,15 +33,6 @@ object FunctionalUI {
     private val init = program.init(new URL(dom.window.location.href))
     private var state = init._1
 
-    object browser extends DefaultBrowser {
-      override def pushUrl(url: String) = {
-        super.pushUrl(url)
-        program.onUrlChange
-          .map(_(new URL(dom.window.location.href)))
-          .map(dispatch(_))
-      }
-    }
-
     def dispatch(msg: Msg): Unit = {
       apply(program.update(msg, state))
     }
@@ -50,7 +41,16 @@ object FunctionalUI {
       val (model, effect) = change
       state = model
       ReactDOM.render(program.view(model, dispatch), container)
-      effect(browser, dispatch)
+      effect(dispatch, browser)
+    }
+
+    object browser extends DefaultBrowser {
+      override def pushUrl(url: String) = {
+        super.pushUrl(url)
+        program.onUrlChange
+          .map(_(new URL(dom.window.location.href)))
+          .map(dispatch(_))
+      }
     }
 
     program.onUrlChange.map(onUrlChange => {
@@ -63,7 +63,7 @@ object FunctionalUI {
     apply(init)
   }
 
-  def noEffect[Msg]() = (browser: Browser, dispatch: Msg => Unit) => ()
+  def noEffect[Msg]() = (dispatch: Msg => Unit, browser: Browser) => ()
 
   trait Browser {
     def pushUrl(url: String)
