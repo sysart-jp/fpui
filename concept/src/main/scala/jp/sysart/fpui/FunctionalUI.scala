@@ -33,32 +33,10 @@ object FunctionalUI {
     private val init = program.init(new URL(dom.window.location.href))
     private var state = init._1
 
-    object browser extends Browser {
-      implicit val ec = scala.concurrent.ExecutionContext.global
-
-      def pushUrl(url: String) = {
-        dom.window.history.pushState((), "", url)
+    object browser extends DefaultBrowser {
+      override def pushUrl(url: String) = {
+        super.pushUrl(url)
         program.onUrlChange.map(_(new URL(dom.window.location.href)))
-      }
-
-      def fetchOne[Msg, Entity](
-          url: String,
-          decoder: Decoder[Entity],
-          createMsg: Either[Throwable, Entity] => Msg,
-          dispatch: Msg => Unit
-      ): Unit = {
-        implicit val entityDecoder = decoder
-        Ajax
-          .get(url, null, 0, Map("Accept" -> "application/json"))
-          .onComplete {
-            case Success(response) => {
-              val decoded = decode[Entity](response.responseText)
-              dispatch(createMsg(decoded))
-            }
-            case Failure(t) => {
-              dispatch(createMsg(Left(t)))
-            }
-          }
       }
     }
 
@@ -94,5 +72,33 @@ object FunctionalUI {
         createMsg: Either[Throwable, Entity] => Msg,
         dispatch: Msg => Unit
     ): Unit
+  }
+
+  class DefaultBrowser extends Browser {
+    implicit val ec = scala.concurrent.ExecutionContext.global
+
+    def pushUrl(url: String) = {
+      dom.window.history.pushState((), "", url)
+    }
+
+    def fetchOne[Msg, Entity](
+        url: String,
+        decoder: Decoder[Entity],
+        createMsg: Either[Throwable, Entity] => Msg,
+        dispatch: Msg => Unit
+    ): Unit = {
+      implicit val entityDecoder = decoder
+      Ajax
+        .get(url, null, 0, Map("Accept" -> "application/json"))
+        .onComplete {
+          case Success(response) => {
+            val decoded = decode[Entity](response.responseText)
+            dispatch(createMsg(decoded))
+          }
+          case Failure(t) => {
+            dispatch(createMsg(Left(t)))
+          }
+        }
+    }
   }
 }
