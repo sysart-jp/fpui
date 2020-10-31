@@ -61,25 +61,24 @@ object Book {
 
   def view(model: Model, dispatch: Msg => Unit): ReactElement = {
     div(className := "book")(
-      model.book
-        .map(book =>
-          div(
-            h1(className := "title")(book.title),
-            div(className := "author")(book.author),
-            book.about.map(about =>
-              div(
-                className := "about",
-                dangerouslySetInnerHTML := js.Dynamic.literal(__html = about)
-              )
-            ),
-            book.copy.map(copy =>
-              div(
-                className := "copy",
-                dangerouslySetInnerHTML := js.Dynamic.literal(__html = copy)
-              )
+      model.book.map(book =>
+        div(
+          h1(className := "title")(book.title),
+          div(className := "author")(book.author),
+          book.about.map(about =>
+            div(
+              className := "about",
+              dangerouslySetInnerHTML := js.Dynamic.literal(__html = about)
+            )
+          ),
+          book.copy.map(copy =>
+            div(
+              className := "copy",
+              dangerouslySetInnerHTML := js.Dynamic.literal(__html = copy)
             )
           )
         )
+      )
     )
   }
 }
