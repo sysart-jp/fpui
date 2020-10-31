@@ -93,7 +93,7 @@ object Search {
       else
         div(className := "search-results")(
           model.books.map(book =>
-            div(className := "found-item")(
+            div(className := "found-item", key := book.workId.toString())(
               a(
                 className := "title",
                 href := "#",
