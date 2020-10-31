@@ -26,11 +26,15 @@ object Search {
   //
 
   sealed trait Msg
-  case object Test extends Msg
+  case class QueryInput(query: String) extends Msg
+  case object SendQuery extends Msg
 
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
     msg match {
-      case Test =>
+      case QueryInput(query) =>
+        (model.copy(query = query), FUI.noEffect)
+
+      case SendQuery =>
         (model, (dispatch, browser) => browser.pushUrl("/book/118711"))
     }
   }
@@ -42,7 +46,15 @@ object Search {
   def view(model: Model, dispatch: Msg => Unit): ReactElement = {
     div(className := "search")(
       h1("Book Search"),
-      button(onClick := ((e) => dispatch(Test)))("Test")
+      div(className := "search-query")(
+        input(
+          `type` := "text",
+          value := model.query,
+          onInput := ((e) => dispatch(QueryInput(e.target.value)))
+        ),
+        button(onClick := ((e) => dispatch(SendQuery)))("Search")
+      ),
+      div(className := "search-results")()
     )
   }
 }
