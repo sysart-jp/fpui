@@ -68,10 +68,10 @@ object FunctionalUI {
   trait Browser {
     def pushUrl(url: String)
 
-    def fetchOne[Msg, Entity](
+    def ajaxGet[Msg, Result](
         url: String,
-        decoder: Decoder[Entity],
-        createMsg: Either[Throwable, Entity] => Msg,
+        decoder: Decoder[Result],
+        createMsg: Either[Throwable, Result] => Msg,
         dispatch: Msg => Unit
     ): Unit
   }
@@ -83,18 +83,18 @@ object FunctionalUI {
       dom.window.history.pushState((), "", url)
     }
 
-    def fetchOne[Msg, Entity](
+    def ajaxGet[Msg, Result](
         url: String,
-        decoder: Decoder[Entity],
-        createMsg: Either[Throwable, Entity] => Msg,
+        decoder: Decoder[Result],
+        createMsg: Either[Throwable, Result] => Msg,
         dispatch: Msg => Unit
     ): Unit = {
-      implicit val entityDecoder = decoder
+      implicit val resultDecoder = decoder
       Ajax
         .get(url, null, 0, Map("Accept" -> "application/json"))
         .onComplete {
           case Success(response) => {
-            val decoded = decode[Entity](response.responseText)
+            val decoded = decode[Result](response.responseText)
             dispatch(createMsg(decoded))
           }
           case Failure(t) => {

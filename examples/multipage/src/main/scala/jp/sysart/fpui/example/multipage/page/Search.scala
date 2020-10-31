@@ -31,7 +31,7 @@ object Search {
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
     msg match {
       case Test =>
-        (model, (browser, dispatch) => browser.pushUrl("/hello"))
+        (model, (browser, dispatch) => browser.pushUrl("/book/118711"))
     }
   }
 
