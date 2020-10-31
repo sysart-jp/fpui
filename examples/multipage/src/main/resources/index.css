@@ -15,6 +15,13 @@ div.app {
   margin-bottom: 100px;
 }
 
+div.loading {
+  margin-top: 3rem;
+  text-align: center;
+  font-size: 20px;
+  color: #ccc;
+}
+
 div.author {
   text-align: center;
 }
