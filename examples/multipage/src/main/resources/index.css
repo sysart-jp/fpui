@@ -33,6 +33,13 @@ button {
   box-sizing: border-box;
 }
 
+button[disabled], button[disabled]:hover {
+  color: #fff;
+  background: #ccc!important;
+  border-color: #ccc!important;
+  text-shadow: none!important;
+}
+
 div.app {
   max-width: 800px;
   margin-left: auto;

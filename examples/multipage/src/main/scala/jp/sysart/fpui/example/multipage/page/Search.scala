@@ -52,7 +52,10 @@ object Search {
           value := model.query,
           onInput := ((e) => dispatch(QueryInput(e.target.value)))
         ),
-        button(onClick := ((e) => dispatch(SendQuery)))("Search")
+        button(
+          disabled := model.query.trim().isEmpty() || model.loading,
+          onClick := ((e) => dispatch(SendQuery))
+        )("Search")
       ),
       div(className := "search-results")()
     )
