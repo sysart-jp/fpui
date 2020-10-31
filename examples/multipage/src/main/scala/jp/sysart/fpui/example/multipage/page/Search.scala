@@ -6,6 +6,9 @@ import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 
+import jp.sysart.fpui.example.multipage.Domain
+import jp.sysart.fpui.example.multipage.Server
+
 object Search {
 
   //
@@ -15,11 +18,12 @@ object Search {
   case class Model(
       query: String,
       loading: Boolean,
-      loadingError: Option[Throwable]
+      loadingError: Option[Throwable],
+      books: Seq[Domain.Book]
   )
 
   def init(): (Model, FUI.Effect[Msg]) =
-    (Model("", false, None), FUI.noEffect)
+    (Model("", false, None, Seq.empty), FUI.noEffect)
 
   //
   // UPDATE
@@ -28,6 +32,8 @@ object Search {
   sealed trait Msg
   case class QueryInput(query: String) extends Msg
   case object SendQuery extends Msg
+  case class SearchResult(result: Either[Throwable, Seq[Domain.Book]])
+      extends Msg
 
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
     msg match {
@@ -35,7 +41,28 @@ object Search {
         (model.copy(query = query), FUI.noEffect)
 
       case SendQuery =>
-        (model, (dispatch, browser) => browser.pushUrl("/book/118711"))
+        (
+          model.copy(loading = true),
+          (dispatch, browser) =>
+            Server.searchBooks(
+              model.query,
+              result => SearchResult(result),
+              dispatch,
+              browser
+            )
+        )
+
+      case SearchResult(Right(books)) =>
+        (
+          model.copy(loading = false, loadingError = None, books = books),
+          FUI.noEffect
+        )
+
+      case SearchResult(Left(error)) =>
+        (
+          model.copy(loading = false, loadingError = Some(error)),
+          FUI.noEffect
+        )
     }
   }
 

@@ -22,6 +22,14 @@ object Server {
       Book
     )
 
+  val searchBooksDecoder = new Decoder[Seq[Book]] {
+    implicit val bookSeqDecoder = Decoder.decodeSeq(bookDecoder)
+    final def apply(c: HCursor): Decoder.Result[Seq[Book]] =
+      for {
+        books <- c.downField("work").as[Seq[Book]]
+      } yield books
+  }
+
   def searchBooks[Msg](
       query: String,
       createMsg: Either[Throwable, Seq[Book]] => Msg,
@@ -31,7 +39,7 @@ object Server {
     val encodedQuery = URIUtils.encodeURIComponent(query)
     browser.ajaxGet(
       "https://reststop.randomhouse.com/resources/works?search=" + encodedQuery,
-      Decoder.decodeSeq(bookDecoder),
+      searchBooksDecoder,
       createMsg,
       dispatch
     )
