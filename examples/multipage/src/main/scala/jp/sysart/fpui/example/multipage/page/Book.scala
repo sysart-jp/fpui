@@ -4,6 +4,8 @@ import jp.sysart.fpui.{FunctionalUI => FUI}
 import jp.sysart.fpui.example.multipage.Domain
 import jp.sysart.fpui.example.multipage.Server
 
+import scala.scalajs.js
+
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.web.html._
@@ -59,13 +61,25 @@ object Book {
 
   def view(model: Model, dispatch: Msg => Unit): ReactElement = {
     div(className := "book")(
-      h2("Book"),
-      model.book.map(book => {
-        div(
-          h1(className := "title")(book.title),
-          div(className := "author")(book.author)
+      model.book
+        .map(book =>
+          div(
+            h1(className := "title")(book.title),
+            div(className := "author")(book.author),
+            book.about.map(about =>
+              div(
+                className := "about",
+                dangerouslySetInnerHTML := js.Dynamic.literal(__html = about)
+              )
+            ),
+            book.copy.map(copy =>
+              div(
+                className := "copy",
+                dangerouslySetInnerHTML := js.Dynamic.literal(__html = copy)
+              )
+            )
+          )
         )
-      })
     )
   }
 }

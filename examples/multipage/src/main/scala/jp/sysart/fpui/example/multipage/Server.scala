@@ -18,7 +18,9 @@ import jp.sysart.fpui.example.multipage.Domain.Book
 object Server {
 
   val bookDecoder: Decoder[Book] =
-    Decoder.forProduct3("workid", "titleweb", "authorweb")(Book)
+    Decoder.forProduct5("workid", "titleweb", "authorweb", "rgabout", "rgcopy")(
+      Book
+    )
 
   def searchBooks[Msg](
       query: String,

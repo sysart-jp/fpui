@@ -1,5 +1,29 @@
 body {
   margin: 0;
   padding: 0;
-  font-family: sans-serif;
+  font: 13px Verdana, Helvetica, Arial, sans-serif
+}
+
+h1, h2, h3 {
+  text-align: center;
+}
+
+div.app {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 100px;
+}
+
+div.author {
+  text-align: center;
+}
+
+div.about {
+  margin-top: 2rem;
+  font-size: 14px;
+}
+
+div.copy {
+  margin-top: 3rem;
 }

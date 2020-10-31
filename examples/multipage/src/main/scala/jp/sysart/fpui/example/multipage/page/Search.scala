@@ -41,7 +41,7 @@ object Search {
 
   def view(model: Model, dispatch: Msg => Unit): ReactElement = {
     div(className := "search")(
-      h2("Search"),
+      h1("Book Search"),
       button(onClick := ((e) => dispatch(Test)))("Test")
     )
   }

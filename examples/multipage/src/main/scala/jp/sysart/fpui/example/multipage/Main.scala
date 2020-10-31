@@ -111,12 +111,14 @@ object Main {
   // VIEW
   //
 
+  val css = IndexCSS
+
   def view(model: Model, dispatch: Msg => Unit): ReactElement = {
     def mapDispatch[SubMsg](wrap: SubMsg => Msg) =
       (subMsg: SubMsg) => dispatch(wrap(subMsg))
 
     div(className := "app")(
-      h1(className := "app-title")("Multipage example"),
+      div(className := "app-header")(),
       model.currentPage match {
         case SearchPage(pageModel) =>
           page.Search.view(pageModel, mapDispatch(SearchPageMsg(_)))

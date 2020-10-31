@@ -5,6 +5,8 @@ object Domain {
   case class Book(
       workId: Int,
       title: String,
-      author: String
+      author: String,
+      about: Option[String],
+      copy: Option[String]
   )
 }
