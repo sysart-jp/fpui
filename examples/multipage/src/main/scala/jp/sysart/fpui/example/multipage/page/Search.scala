@@ -97,7 +97,10 @@ object Search {
               a(
                 className := "title",
                 href := "#",
-                onClick := ((e) => dispatch(FoundItemClicked(book.workId)))
+                onClick := ((e) => {
+                  e.preventDefault()
+                  dispatch(FoundItemClicked(book.workId))
+                })
               )(book.title),
               div(className := "author")(book.author)
             )
