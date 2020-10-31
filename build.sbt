@@ -1,10 +1,15 @@
 ThisBuild / name := "functional-ui"
 ThisBuild / scalaVersion := "2.13.2"
 
+val circeVersion = "0.13.0"
+
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
     "me.shadaj" %%% "slinky-web" % "0.6.5",
     "me.shadaj" %%% "slinky-hot" % "0.6.5",
+    "io.circe" %%% "circe-core" % circeVersion,
+    "io.circe" %%% "circe-generic" % circeVersion,
+    "io.circe" %%% "circe-parser" % circeVersion,
     "org.scalatest" %%% "scalatest" % "3.1.1" % Test
   ),
   npmDependencies in Compile ++= Seq(
@@ -58,16 +63,12 @@ addCommandAlias(
   ";exampleTodo/fastOptJS::startWebpackDevServer;~exampleTodo/fastOptJS"
 )
 
-val circeVersion = "0.13.0"
 lazy val exampleMultipage = (project in file("examples/multipage"))
   .enablePlugins(ScalaJSBundlerPlugin)
   .settings(
     commonSettings,
     libraryDependencies ++= Seq(
-      "tech.sparse" %%% "trail" % "0.3.0",
-      "io.circe" %%% "circe-core" % circeVersion,
-      "io.circe" %%% "circe-generic" % circeVersion,
-      "io.circe" %%% "circe-parser" % circeVersion
+      "tech.sparse" %%% "trail" % "0.3.0"
     )
   )
   .dependsOn(concept)

@@ -11,32 +11,25 @@ import io.circe.syntax._
 
 import org.scalajs.dom.ext.Ajax
 
+import jp.sysart.fpui.FunctionalUI.Browser
 import jp.sysart.fpui.example.multipage.Domain.Book
 
 object Server {
 
-  implicit val decoderBook: Decoder[Book] =
+  val bookDecoder: Decoder[Book] =
     Decoder.forProduct3("workid", "titleweb", "authorweb")(Book)
-
-  implicit val ec = scala.concurrent.ExecutionContext.global
 
   def fetchBook[Msg](
       workId: Int,
       createMsg: Either[Throwable, Book] => Msg,
+      browser: Browser,
       dispatch: Msg => Unit
   ): Unit = {
-    ajaxGet("https://reststop.randomhouse.com/resources/works/" + workId + "/")
-      .onComplete {
-        case Success(response) => {
-          val decoded = decode[Book](response.responseText)
-          dispatch(createMsg(decoded))
-        }
-        case Failure(t) => {
-          dispatch(createMsg(Left(t)))
-        }
-      }
+    browser.fetchOne[Msg, Book](
+      "https://reststop.randomhouse.com/resources/works/" + workId + "/",
+      bookDecoder,
+      createMsg,
+      dispatch
+    )
   }
-
-  private def ajaxGet(url: String) =
-    Ajax.get(url, null, 0, Map("Accept" -> "application/json"))
 }

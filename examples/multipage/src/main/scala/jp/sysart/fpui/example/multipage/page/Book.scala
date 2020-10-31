@@ -25,7 +25,12 @@ object Book {
     (
       Model(workId, true, None, None),
       (browser, dispatch) => {
-        Server.fetchBook(workId, result => BookFetched(result), dispatch)
+        Server.fetchBook(
+          workId,
+          result => BookFetched(result),
+          browser,
+          dispatch
+        )
       }
     )
 

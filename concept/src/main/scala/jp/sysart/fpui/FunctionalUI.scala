@@ -1,12 +1,23 @@
 package jp.sysart.fpui
 
+import scala.util.Success
+import scala.util.Failure
+
 import org.scalajs.dom
 import org.scalajs.dom.Element
-import slinky.core.facade.ReactElement
-import slinky.web.ReactDOM
 import org.scalajs.dom.experimental.URL
 import org.scalajs.dom.raw.CustomEvent
 import org.scalajs.dom.raw.Event
+import org.scalajs.dom.ext.Ajax
+
+import slinky.core.facade.ReactElement
+import slinky.web.ReactDOM
+
+import io.circe._
+import io.circe.Decoder
+import io.circe.generic.auto._
+import io.circe.parser._
+import io.circe.syntax._
 
 object FunctionalUI {
   type Effect[Msg] = (Browser, (Msg => Unit)) => Unit
@@ -23,9 +34,31 @@ object FunctionalUI {
     private var state = init._1
 
     object browser extends Browser {
+      implicit val ec = scala.concurrent.ExecutionContext.global
+
       def pushUrl(url: String) = {
         dom.window.history.pushState((), "", url)
         program.onUrlChange.map(_(new URL(dom.window.location.href)))
+      }
+
+      def fetchOne[Msg, Entity](
+          url: String,
+          decoder: Decoder[Entity],
+          createMsg: Either[Throwable, Entity] => Msg,
+          dispatch: Msg => Unit
+      ): Unit = {
+        implicit val entityDecoder = decoder
+        Ajax
+          .get(url, null, 0, Map("Accept" -> "application/json"))
+          .onComplete {
+            case Success(response) => {
+              val decoded = decode[Entity](response.responseText)
+              dispatch(createMsg(decoded))
+            }
+            case Failure(t) => {
+              dispatch(createMsg(Left(t)))
+            }
+          }
       }
     }
 
@@ -54,5 +87,12 @@ object FunctionalUI {
 
   trait Browser {
     def pushUrl(url: String)
+
+    def fetchOne[Msg, Entity](
+        url: String,
+        decoder: Decoder[Entity],
+        createMsg: Either[Throwable, Entity] => Msg,
+        dispatch: Msg => Unit
+    ): Unit
   }
 }
