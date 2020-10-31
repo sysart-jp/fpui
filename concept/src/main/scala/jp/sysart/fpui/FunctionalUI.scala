@@ -9,7 +9,7 @@ import org.scalajs.dom.raw.CustomEvent
 import org.scalajs.dom.raw.Event
 
 object FunctionalUI {
-  type Effect[Msg] = (Msg => Unit) => Unit
+  type Effect[Msg] = (Browser, (Msg => Unit)) => Unit
 
   case class Program[Model, Msg](
       init: (URL) => (Model, Effect[Msg]),
@@ -22,6 +22,13 @@ object FunctionalUI {
     private val init = program.init(new URL(dom.window.location.href))
     private var state = init._1
 
+    object browser extends Browser {
+      def pushUrl(url: String) = {
+        dom.window.history.pushState((), "", url)
+        program.onUrlChange.map(_(new URL(dom.window.location.href)))
+      }
+    }
+
     def dispatch(msg: Msg): Unit = {
       apply(program.update(msg, state))
     }
@@ -30,27 +37,22 @@ object FunctionalUI {
       val (model, effect) = change
       state = model
       ReactDOM.render(program.view(model, dispatch), container)
-      effect(dispatch)
+      effect(browser, dispatch)
     }
 
     program.onUrlChange.map(onUrlChange => {
-      val listener =
+      dom.window.addEventListener(
+        "popstate",
         (e: Event) => dispatch(onUrlChange(new URL(dom.window.location.href)))
-      dom.window.addEventListener("popstate", listener)
-      dom.window.addEventListener(pushUrlEventType, listener)
+      )
     })
 
     apply(init)
   }
 
-  def noEffect[Msg]() = (dispatch: Msg => Unit) => ()
+  def noEffect[Msg]() = (browser: Browser, dispatch: Msg => Unit) => ()
 
-  private val pushUrlEventType = "pushurl"
-
-  def pushUrl(url: String) = {
-    // Calling history.pushState() or history.replaceState() won't trigger any event by default.
-    // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
-    dom.window.history.pushState((), "", url)
-    dom.window.dispatchEvent(new CustomEvent(pushUrlEventType, ()))
+  trait Browser {
+    def pushUrl(url: String)
   }
 }

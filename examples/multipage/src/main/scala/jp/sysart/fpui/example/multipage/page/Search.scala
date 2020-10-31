@@ -26,9 +26,13 @@ object Search {
   //
 
   sealed trait Msg
+  case object Test extends Msg
 
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
-    (model, FUI.noEffect)
+    msg match {
+      case Test =>
+        (model, FUI.noEffect)
+    }
   }
 
   //

@@ -97,7 +97,7 @@ object Main {
               if (e.id == id) e.copy(editing = isEditing) else e
             )
           ),
-          dispatch =>
+          (browser, dispatch) =>
             dom.document.getElementById("todo-" + id) match {
               case element: HTMLElement => setTimeout(100) { element.focus() }
               case _                    => ()

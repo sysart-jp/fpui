@@ -24,7 +24,7 @@ object Book {
   def init(workId: Int): (Model, FUI.Effect[Msg]) =
     (
       Model(workId, true, None, None),
-      dispatch => {
+      (browser, dispatch) => {
         Server.fetchBook(workId, result => BookFetched(result), dispatch)
       }
     )

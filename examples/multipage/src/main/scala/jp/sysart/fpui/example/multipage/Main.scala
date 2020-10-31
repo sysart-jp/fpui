@@ -64,11 +64,17 @@ object Main {
   //
 
   sealed trait Msg
+  case class UrlChanged(url: URL) extends Msg
   case class SearchPageMsg(pageMsg: page.Search.Msg) extends Msg
   case class BookPageMsg(pageMsg: page.Book.Msg) extends Msg
 
+  val onUrlChange = (url: URL) => UrlChanged(url)
+
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
     (msg, model.currentPage) match {
+      case (UrlChanged(url), _) =>
+        applyUrlChange(url)
+
       case (SearchPageMsg(pageMsg), SearchPage(pageModel)) =>
         applySubUpdate(
           page.Search.update(pageMsg, pageModel),
@@ -94,7 +100,8 @@ object Main {
     val (subModel, subEffect) = subUpdate
     (
       applyModel(subModel),
-      dispatch => subEffect(subMsg => dispatch(applyMsg(subMsg)))
+      (browser, dispatch) =>
+        subEffect(browser, subMsg => dispatch(applyMsg(subMsg)))
     )
   }
 
@@ -125,7 +132,7 @@ object Main {
 
     new FUI.Runtime(
       dom.document.getElementById("root"),
-      FUI.Program(init, view, update)
+      FUI.Program(init, view, update, Some(onUrlChange))
     )
   }
 }
