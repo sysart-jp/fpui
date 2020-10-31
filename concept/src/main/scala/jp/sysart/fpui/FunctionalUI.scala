@@ -36,7 +36,9 @@ object FunctionalUI {
     object browser extends DefaultBrowser {
       override def pushUrl(url: String) = {
         super.pushUrl(url)
-        program.onUrlChange.map(_(new URL(dom.window.location.href)))
+        program.onUrlChange
+          .map(_(new URL(dom.window.location.href)))
+          .map(dispatch(_))
       }
     }
 

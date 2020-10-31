@@ -72,8 +72,10 @@ object Main {
 
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
     (msg, model.currentPage) match {
-      case (UrlChanged(url), _) =>
+      case (UrlChanged(url), _) => {
+        println("url changed: " + url)
         applyUrlChange(url)
+      }
 
       case (SearchPageMsg(pageMsg), SearchPage(pageModel)) =>
         applySubUpdate(

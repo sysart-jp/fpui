@@ -31,7 +31,7 @@ object Search {
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
     msg match {
       case Test =>
-        (model, FUI.noEffect)
+        (model, (browser, dispatch) => browser.pushUrl("/hello"))
     }
   }
 
@@ -41,7 +41,8 @@ object Search {
 
   def view(model: Model, dispatch: Msg => Unit): ReactElement = {
     div(className := "search")(
-      "Search"
+      h2("Search"),
+      button(onClick := ((e) => dispatch(Test)))("Test")
     )
   }
 }

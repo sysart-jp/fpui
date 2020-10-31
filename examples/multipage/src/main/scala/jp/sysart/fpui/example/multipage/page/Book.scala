@@ -59,6 +59,7 @@ object Book {
 
   def view(model: Model, dispatch: Msg => Unit): ReactElement = {
     div(className := "book")(
+      h2("Book"),
       model.book.map(book => {
         div(
           h1(className := "title")(book.title),
