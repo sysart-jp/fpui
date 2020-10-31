@@ -33,6 +33,7 @@ object Main {
     msg match {
       case Input(input) =>
         (model.copy(input = input), FunctionalUI.noEffect)
+
       case Send =>
         (
           model.copy(messages = model.messages :+ model.input, input = ""),

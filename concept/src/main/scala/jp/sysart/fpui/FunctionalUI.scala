@@ -37,7 +37,7 @@ object FunctionalUI {
       val listener =
         (e: Event) => dispatch(onUrlChange(new URL(dom.window.location.href)))
       dom.window.addEventListener("popstate", listener)
-      dom.window.addEventListener("pushstate", listener)
+      dom.window.addEventListener(pushUrlEventType, listener)
     })
 
     apply(init)
@@ -45,10 +45,12 @@ object FunctionalUI {
 
   def noEffect[Msg]() = (dispatch: Msg => Unit) => ()
 
+  private val pushUrlEventType = "pushurl"
+
   def pushUrl(url: String) = {
     // Calling history.pushState() or history.replaceState() won't trigger any event by default.
     // https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onpopstate
     dom.window.history.pushState((), "", url)
-    dom.window.dispatchEvent(new CustomEvent("pushstate", ()))
+    dom.window.dispatchEvent(new CustomEvent(pushUrlEventType, ()))
   }
 }
