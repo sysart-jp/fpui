@@ -27,11 +27,19 @@ object Main {
   //
 
   object Route {
+    val query = Root & Param[String]("query")
     val book = Root / "book" / Arg[Int]
   }
 
   def applyUrlChange(url: URL): (Model, FUI.Effect[Msg]) =
-    url.pathname match {
+    url.pathname + url.search + url.hash match {
+      case Route.query(query) =>
+        applySubUpdate(
+          page.Search.init(query),
+          SearchPage.andThen(Model),
+          SearchPageMsg
+        )
+
       case Route.book(id) =>
         applySubUpdate(
           page.Book.init(id),

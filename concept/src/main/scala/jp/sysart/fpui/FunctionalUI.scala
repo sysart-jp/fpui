@@ -66,7 +66,18 @@ object FunctionalUI {
   def noEffect[Msg]() = (dispatch: Msg => Unit, browser: Browser) => ()
 
   trait Browser {
-    def pushUrl(url: String)
+
+    /**
+      * Change the URL, but do not trigger a page load.
+      * This will add a new entry to the browser history.
+      */
+    def pushUrl(url: String): Unit
+
+    /**
+      * Change the URL, but do not trigger a page load.
+      * This will not add a new entry to the browser history.
+      */
+    def replaceUrl(url: String): Unit
 
     def ajaxGet[Msg, Result](
         url: String,
@@ -81,6 +92,10 @@ object FunctionalUI {
 
     def pushUrl(url: String) = {
       dom.window.history.pushState((), "", url)
+    }
+
+    def replaceUrl(url: String) = {
+      dom.window.history.replaceState((), "", url)
     }
 
     def ajaxGet[Msg, Result](

@@ -6,6 +6,7 @@ import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 
+import jp.sysart.fpui.example.multipage.Main.Route
 import jp.sysart.fpui.example.multipage.Domain
 import jp.sysart.fpui.example.multipage.Server
 
@@ -24,6 +25,12 @@ object Search {
 
   def init(): (Model, FUI.Effect[Msg]) =
     (Model("", false, None, Seq.empty), FUI.noEffect)
+
+  def init(query: String): (Model, FUI.Effect[Msg]) =
+    (
+      Model(query, false, None, Seq.empty),
+      (dispatch, browser) => dispatch(SendQuery)
+    )
 
   //
   // UPDATE
@@ -44,13 +51,15 @@ object Search {
       case SendQuery =>
         (
           model.copy(loading = true),
-          (dispatch, browser) =>
+          (dispatch, browser) => {
             Server.searchBooks(
               model.query,
               result => SearchResult(result),
               dispatch,
               browser
             )
+            browser.replaceUrl(Route.query.url(model.query))
+          }
         )
 
       case SearchResult(Right(books)) =>
@@ -66,7 +75,7 @@ object Search {
         )
 
       case FoundItemClicked(workId) =>
-        (model, (dispatch, browser) => browser.pushUrl("/book/" + workId))
+        (model, (dispatch, browser) => browser.pushUrl(Route.book.url(workId)))
     }
   }
 
