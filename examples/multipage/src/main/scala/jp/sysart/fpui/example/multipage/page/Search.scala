@@ -89,6 +89,7 @@ object Search {
       div(className := "search-query")(
         input(
           `type` := "text",
+          placeholder := "Title or Author Name (e.g. Haruki)",
           value := model.query,
           onInput := ((e) => dispatch(QueryInput(e.target.value)))
         ),
