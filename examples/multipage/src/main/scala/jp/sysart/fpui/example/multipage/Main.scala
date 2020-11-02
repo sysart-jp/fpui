@@ -76,8 +76,6 @@ object Main {
   case class SearchPageMsg(pageMsg: page.Search.Msg) extends Msg
   case class BookPageMsg(pageMsg: page.Book.Msg) extends Msg
 
-  val onUrlChange = (url: URL) => UrlChanged(url)
-
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
     (msg, model.currentPage) match {
       case (UrlChanged(url), _) =>
@@ -142,7 +140,7 @@ object Main {
 
     new FUI.Runtime(
       dom.document.getElementById("root"),
-      FUI.Program(init, view, update, Some(onUrlChange))
+      FUI.Program(init, view, update, Some(UrlChanged(_)))
     )
   }
 }
