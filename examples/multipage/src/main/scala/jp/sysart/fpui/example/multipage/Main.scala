@@ -27,33 +27,10 @@ object Main {
   //
 
   object Route {
-    val query = Root & Param[String]("query")
+    val search = Root
+    val searchWithQuery = Root & Param[String]("query")
     val book = Root / "book" / Arg[Int]
   }
-
-  def applyUrlChange(url: URL): (Model, FUI.Effect[Msg]) =
-    url.pathname + url.search + url.hash match {
-      case Route.query(query) =>
-        applySubUpdate(
-          page.Search.init(query),
-          SearchPage.andThen(Model),
-          SearchPageMsg
-        )
-
-      case Route.book(id) =>
-        applySubUpdate(
-          page.Book.init(id),
-          BookPage.andThen(Model),
-          BookPageMsg
-        )
-
-      case _ =>
-        applySubUpdate(
-          page.Search.init(),
-          SearchPage.andThen(Model),
-          SearchPageMsg
-        )
-    }
 
   //
   // MODEL
@@ -62,10 +39,12 @@ object Main {
   case class Model(currentPage: Page)
 
   sealed trait Page
+  case object NotFoundPage extends Page
   case class SearchPage(pageModel: page.Search.Model) extends Page
   case class BookPage(pageModel: page.Book.Model) extends Page
 
-  def init(url: URL): (Model, FUI.Effect[Msg]) = applyUrlChange(url)
+  def init(url: URL): (Model, FUI.Effect[Msg]) =
+    applyUrlChange(url, Model(NotFoundPage))
 
   //
   // UPDATE
@@ -79,7 +58,7 @@ object Main {
   def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
     (msg, model.currentPage) match {
       case (UrlChanged(url), _) =>
-        applyUrlChange(url)
+        applyUrlChange(url, model)
 
       case (SearchPageMsg(pageMsg), SearchPage(pageModel)) =>
         applySubUpdate(
@@ -96,6 +75,33 @@ object Main {
         )
 
       case _ => (model, FUI.noEffect)
+    }
+
+  def applyUrlChange(url: URL, model: Model): (Model, FUI.Effect[Msg]) =
+    url.pathname + url.search + url.hash match {
+      case Route.searchWithQuery(query) =>
+        applySubUpdate(
+          page.Search.init(query),
+          (m: page.Search.Model) => model.copy(currentPage = SearchPage(m)),
+          SearchPageMsg
+        )
+
+      case Route.search(_) =>
+        applySubUpdate(
+          page.Search.init(),
+          (m: page.Search.Model) => model.copy(currentPage = SearchPage(m)),
+          SearchPageMsg
+        )
+
+      case Route.book(id) =>
+        applySubUpdate(
+          page.Book.init(id),
+          (m: page.Book.Model) => model.copy(currentPage = BookPage(m)),
+          BookPageMsg
+        )
+
+      case _ =>
+        (model.copy(currentPage = NotFoundPage), FUI.noEffect)
     }
 
   def applySubUpdate[SubModel, SubMsg](
@@ -124,6 +130,9 @@ object Main {
     div(className := "app")(
       div(className := "app-header")(),
       model.currentPage match {
+        case NotFoundPage =>
+          div(className := "page-not-found")("Page Not Found")
+
         case SearchPage(pageModel) =>
           page.Search.view(pageModel, mapDispatch(SearchPageMsg(_)))
 

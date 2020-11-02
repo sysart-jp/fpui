@@ -58,7 +58,7 @@ object Search {
               dispatch,
               browser
             )
-            browser.replaceUrl(Route.query.url(model.query))
+            browser.replaceUrl(Route.searchWithQuery.url(model.query))
           }
         )
 
