@@ -66,17 +66,19 @@ object Main {
         applyUrlChange(url, model)
 
       case (SearchPageMsg(pageMsg), SearchPage(pageModel)) =>
-        applySubUpdate[page.Search.Model, page.Search.Msg](
+        applyPageUpdate(
           page.Search.update(pageMsg, pageModel),
-          SearchPage(_).pipe(updatePage(_, model)),
-          SearchPageMsg
+          SearchPage,
+          SearchPageMsg,
+          model
         )
 
       case (BookPageMsg(pageMsg), BookPage(pageModel)) =>
-        applySubUpdate[page.Book.Model, page.Book.Msg](
+        applyPageUpdate(
           page.Book.update(pageMsg, pageModel),
-          BookPage(_).pipe(updatePage(_, model)),
-          BookPageMsg
+          BookPage,
+          BookPageMsg,
+          model
         )
 
       case _ => (model, FUI.noEffect)
@@ -84,26 +86,14 @@ object Main {
 
   def applyUrlChange(url: URL, model: Model): (Model, FUI.Effect[Msg]) =
     url.pathname + url.search + url.hash match {
-      case Route.searchWithQuery(query) =>
-        applySubUpdate[page.Search.Model, page.Search.Msg](
-          page.Search.init(query),
-          SearchPage(_).pipe(updatePage(_, model)),
-          SearchPageMsg
-        )
+      case Route.searchWithQuery(q) =>
+        applyPageUpdate(page.Search.init(q), SearchPage, SearchPageMsg, model)
 
       case Route.search(_) =>
-        applySubUpdate[page.Search.Model, page.Search.Msg](
-          page.Search.init(),
-          SearchPage(_).pipe(updatePage(_, model)),
-          SearchPageMsg
-        )
+        applyPageUpdate(page.Search.init(), SearchPage, SearchPageMsg, model)
 
       case Route.book(id) =>
-        applySubUpdate[page.Book.Model, page.Book.Msg](
-          page.Book.init(id),
-          BookPage(_).pipe(updatePage(_, model)),
-          BookPageMsg
-        )
+        applyPageUpdate(page.Book.init(id), BookPage, BookPageMsg, model)
 
       case _ =>
         (model.copy(currentPage = NotFoundPage), FUI.noEffect)
@@ -121,6 +111,18 @@ object Main {
         subEffect(subMsg => dispatch(applyMsg(subMsg)), browser)
     )
   }
+
+  def applyPageUpdate[PageModel, PageMsg](
+      subUpdate: (PageModel, FUI.Effect[PageMsg]),
+      wrapModel: PageModel => Page,
+      applyMsg: PageMsg => Msg,
+      model: Model
+  ): (Model, FUI.Effect[Msg]) =
+    applySubUpdate[PageModel, PageMsg](
+      subUpdate,
+      wrapModel(_).pipe(updatePage(_, model)),
+      applyMsg
+    )
 
   //
   // VIEW
