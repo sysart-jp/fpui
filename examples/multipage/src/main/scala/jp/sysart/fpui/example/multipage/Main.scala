@@ -2,6 +2,8 @@ package jp.sysart.fpui.example.multipage
 
 import jp.sysart.fpui.{FunctionalUI => FUI}
 
+import scala.util.chaining._
+
 import scala.scalajs.LinkingInfo
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSImport
@@ -46,6 +48,9 @@ object Main {
   def init(url: URL): (Model, FUI.Effect[Msg]) =
     applyUrlChange(url, Model(NotFoundPage))
 
+  def updatePage(page: Page, model: Model): Model =
+    model.copy(currentPage = page)
+
   //
   // UPDATE
   //
@@ -61,16 +66,16 @@ object Main {
         applyUrlChange(url, model)
 
       case (SearchPageMsg(pageMsg), SearchPage(pageModel)) =>
-        applySubUpdate(
+        applySubUpdate[page.Search.Model, page.Search.Msg](
           page.Search.update(pageMsg, pageModel),
-          (m: page.Search.Model) => model.copy(currentPage = SearchPage(m)),
+          SearchPage(_).pipe(updatePage(_, model)),
           SearchPageMsg
         )
 
       case (BookPageMsg(pageMsg), BookPage(pageModel)) =>
-        applySubUpdate(
+        applySubUpdate[page.Book.Model, page.Book.Msg](
           page.Book.update(pageMsg, pageModel),
-          (m: page.Book.Model) => model.copy(currentPage = BookPage(m)),
+          BookPage(_).pipe(updatePage(_, model)),
           BookPageMsg
         )
 
@@ -80,23 +85,23 @@ object Main {
   def applyUrlChange(url: URL, model: Model): (Model, FUI.Effect[Msg]) =
     url.pathname + url.search + url.hash match {
       case Route.searchWithQuery(query) =>
-        applySubUpdate(
+        applySubUpdate[page.Search.Model, page.Search.Msg](
           page.Search.init(query),
-          (m: page.Search.Model) => model.copy(currentPage = SearchPage(m)),
+          SearchPage(_).pipe(updatePage(_, model)),
           SearchPageMsg
         )
 
       case Route.search(_) =>
-        applySubUpdate(
+        applySubUpdate[page.Search.Model, page.Search.Msg](
           page.Search.init(),
-          (m: page.Search.Model) => model.copy(currentPage = SearchPage(m)),
+          SearchPage(_).pipe(updatePage(_, model)),
           SearchPageMsg
         )
 
       case Route.book(id) =>
-        applySubUpdate(
+        applySubUpdate[page.Book.Model, page.Book.Msg](
           page.Book.init(id),
-          (m: page.Book.Model) => model.copy(currentPage = BookPage(m)),
+          BookPage(_).pipe(updatePage(_, model)),
           BookPageMsg
         )
 
