@@ -1,19 +1,11 @@
 package jp.sysart.fpui.example.multipage
 
-import scala.util.Success
-import scala.util.Failure
-
-import io.circe._
-import io.circe.Decoder
-import io.circe.generic.auto._
-import io.circe.parser._
-import io.circe.syntax._
-
-import scala.scalajs.js.URIUtils
-import org.scalajs.dom.ext.Ajax
-
+import cats.effect.IO
+import io.circe.{Decoder, _}
 import jp.sysart.fpui.FunctionalUI.Browser
 import jp.sysart.fpui.example.multipage.Domain.Book
+
+import scala.scalajs.js.URIUtils
 
 object Server {
 
@@ -33,29 +25,23 @@ object Server {
   def searchBooks[Msg](
       query: String,
       createMsg: Either[Throwable, Seq[Book]] => Msg,
-      dispatch: Msg => Unit,
-      browser: Browser
-  ): Unit = {
+  ): IO[Msg] = {
     val encodedQuery = URIUtils.encodeURIComponent(query)
-    browser.ajaxGet(
+    Browser.ajaxGet(
       "https://reststop.randomhouse.com/resources/works?search=" + encodedQuery,
       searchBooksDecoder,
-      createMsg,
-      dispatch
+      createMsg
     )
   }
 
   def fetchBook[Msg](
       workId: Int,
       createMsg: Either[Throwable, Book] => Msg,
-      dispatch: Msg => Unit,
-      browser: Browser
-  ): Unit = {
-    browser.ajaxGet(
+  ): IO[Msg] = {
+    Browser.ajaxGet(
       "https://reststop.randomhouse.com/resources/works/" + workId + "/",
       bookDecoder,
-      createMsg,
-      dispatch
+      createMsg
     )
   }
 }

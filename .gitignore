@@ -24,3 +24,4 @@ node_modules/
 .bloop/
 .ammonite/
 metals.sbt
+/.bsp/

@@ -1,11 +1,11 @@
 package jp.sysart.fpui.example.multipage.page
 
-import jp.sysart.fpui.{FunctionalUI => FUI}
+import cats.effect.IO
+import jp.sysart.fpui.{Main, FunctionalUI => FUI}
 import jp.sysart.fpui.example.multipage.Domain
 import jp.sysart.fpui.example.multipage.Server
 
 import scala.scalajs.js
-
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.web.html._
@@ -23,16 +23,15 @@ object Book {
       book: Option[Domain.Book]
   )
 
-  def init(workId: Int): (Model, FUI.Effect[Msg]) =
+  def init(workId: Int): (Model, IO[Msg]) =
     (
-      Model(workId, true, None, None),
-      (dispatch, browser) =>
-        Server.fetchBook(
-          workId,
-          result => BookFetched(result),
-          dispatch,
-          browser
-        )
+      Model(workId, true, None, None), {
+      Server.fetchBook(
+        workId,
+        result => BookFetched(result),
+      ).unsafeRunSync()
+      IO(Unit)
+    }
     )
 
   //
@@ -40,18 +39,21 @@ object Book {
   //
 
   sealed trait Msg
+  case object Unit extends Msg
   case class BookFetched(result: Either[Throwable, Domain.Book]) extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
+  def update(msg: Msg, model: Model): (Model, IO[Msg]) =
     msg match {
       case BookFetched(Right(book)) =>
-        (model.copy(loading = false, book = Some(book)), FUI.noEffect)
+        (model.copy(loading = false, book = Some(book)), IO(Unit))
 
       case BookFetched(Left(error)) =>
         (
           model.copy(loading = false, loadingError = Some(error)),
-          FUI.noEffect
+          IO(Unit)
         )
+
+      case _ => (model, IO(Unit))
     }
 
   //

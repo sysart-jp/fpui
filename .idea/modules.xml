@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/concept.iml" filepath="$PROJECT_DIR$/.idea/modules/concept.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/exampleMultipage.iml" filepath="$PROJECT_DIR$/.idea/modules/exampleMultipage.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/exampleTodo.iml" filepath="$PROJECT_DIR$/.idea/modules/exampleTodo.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fpui.iml" filepath="$PROJECT_DIR$/.idea/modules/fpui.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/fpui-build.iml" filepath="$PROJECT_DIR$/.idea/modules/fpui-build.iml" />
+    </modules>
+  </component>
+</project>

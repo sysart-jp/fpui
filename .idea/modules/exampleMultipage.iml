@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id="exampleMultipage [file:/Users/yoichi/scalajs/fpui/]" external.linked.project.path="$MODULE_DIR$/../../examples/multipage" external.root.project.path="$MODULE_DIR$/../.." external.system.id="SBT" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_11">
+    <output url="file://$MODULE_DIR$/../../examples/multipage/target/scala-2.13/classes" />
+    <output-test url="file://$MODULE_DIR$/../../examples/multipage/target/scala-2.13/test-classes" />
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../examples/multipage">
+      <sourceFolder url="file://$MODULE_DIR$/../../examples/multipage/src/main/scala" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/../../examples/multipage/src/main/resources" type="java-resource" />
+      <excludeFolder url="file://$MODULE_DIR$/../../examples/multipage/target" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="concept" exported="" />
+    <orderEntry type="library" name="sbt: com.chuusai:shapeless_sjs1_2.13:2.3.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: io.circe:circe-core_sjs1_2.13:0.13.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: io.circe:circe-generic_sjs1_2.13:0.13.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: io.circe:circe-numbers_sjs1_2.13:0.13.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: io.circe:circe-parser_sjs1_2.13:0.13.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: io.circe:circe-scalajs_sjs1_2.13:0.13.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: me.shadaj:slinky-core_sjs1_2.13:0.6.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: me.shadaj:slinky-hot_sjs1_2.13:0.6.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: me.shadaj:slinky-readwrite_sjs1_2.13:0.6.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: me.shadaj:slinky-web_sjs1_2.13:0.6.5:jar" level="project" />
+    <orderEntry type="library" name="sbt: net.java.dev.jna:jna:5.3.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.jline:jline:3.14.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-js:scalajs-dom_sjs1_2.13:0.9.8:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-js:scalajs-library_2.13:1.3.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scala-js:scalajs-test-bridge_2.13:1.3.0:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scala-js:scalajs-test-interface_2.13:1.3.0:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-lang:scala-compiler:2.13.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-lang:scala-library:2.13.2:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.scala-lang:scala-reflect:2.13.2:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scalactic:scalactic_sjs1_2.13:3.1.1:jar" level="project" />
+    <orderEntry type="library" scope="TEST" name="sbt: org.scalatest:scalatest_sjs1_2.13:3.1.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.typelevel:cats-core_sjs1_2.13:2.3.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.typelevel:cats-effect_sjs1_2.13:2.3.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.typelevel:cats-kernel_sjs1_2.13:2.3.1:jar" level="project" />
+    <orderEntry type="library" name="sbt: org.typelevel:simulacrum-scalafix-annotations_2.13:0.5.3:jar" level="project" />
+    <orderEntry type="library" name="sbt: tech.sparse:trail_sjs1_2.13:0.3.0:jar" level="project" />
+  </component>
+</module>

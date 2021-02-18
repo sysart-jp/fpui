@@ -1,5 +1,6 @@
 package jp.sysart.fpui.example.todo
 
+import cats.effect.IO
 import jp.sysart.fpui.{FunctionalUI => FUI}
 
 import scala.scalajs.LinkingInfo
@@ -9,7 +10,6 @@ import scala.scalajs.js.annotation.JSImport
 import org.scalajs.dom
 import org.scalajs.dom.raw.HTMLElement
 import org.scalajs.dom.experimental.URL
-
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.hot
@@ -55,13 +55,14 @@ object Main {
       id = id
     )
 
-  def init(url: URL): (Model, FUI.Effect[Msg]) = (emptyModel(), FUI.noEffect)
+  def init(url: URL): (Model, IO[Msg]) = (emptyModel(), IO(Unit))
 
   //
   // UPDATE
   //
 
   sealed trait Msg
+  case object Unit extends Msg
   case object Add extends Msg
   case class UpdateInput(input: String) extends Msg
   case class EditingEntry(id: Int, isEditing: Boolean) extends Msg
@@ -72,7 +73,7 @@ object Main {
   case class CheckAll(isCompleted: Boolean) extends Msg
   case class ChangeVisibility(visibility: String) extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
+  def update(msg: Msg, model: Model): (Model, IO[Msg]) = {
     msg match {
       case Add =>
         (
@@ -85,10 +86,10 @@ object Main {
               else
                 model.entries :+ newEntry(model.taskInput, model.uid)
           ),
-          FUI.noEffect
+          IO(Unit)
         )
 
-      case UpdateInput(input) => (model.copy(taskInput = input), FUI.noEffect)
+      case UpdateInput(input) => (model.copy(taskInput = input), IO(Unit))
 
       case EditingEntry(id, isEditing) =>
         (
@@ -97,11 +98,15 @@ object Main {
               if (e.id == id) e.copy(editing = isEditing) else e
             )
           ),
-          (dispatch, browser) =>
+          {
             dom.document.getElementById("todo-" + id) match {
-              case element: HTMLElement => setTimeout(100) { element.focus() }
-              case _                    => ()
+              case element: HTMLElement => setTimeout(100) {
+                element.focus()
+              }
+              case _ => Unit
             }
+            IO(Unit)
+          }
         )
 
       case UpdateEntry(id, description) =>
@@ -111,19 +116,19 @@ object Main {
               if (e.id == id) e.copy(description = description) else e
             )
           ),
-          FUI.noEffect
+          IO(Unit)
         )
 
       case Delete(id) =>
         (
           model.copy(entries = model.entries.filterNot(_.id == id)),
-          FUI.noEffect
+          IO(Unit)
         )
 
       case DeleteComplete =>
         (
           model.copy(entries = model.entries.filterNot(_.completed)),
-          FUI.noEffect
+          IO(Unit)
         )
 
       case Check(id, isCompleted) =>
@@ -133,7 +138,7 @@ object Main {
               if (e.id == id) e.copy(completed = isCompleted) else e
             )
           ),
-          FUI.noEffect
+          IO(Unit)
         )
 
       case CheckAll(isCompleted) =>
@@ -141,11 +146,11 @@ object Main {
           model.copy(entries =
             model.entries.map(_.copy(completed = isCompleted))
           ),
-          FUI.noEffect
+          IO(Unit)
         )
 
       case ChangeVisibility(visibility) =>
-        (model.copy(visibility = visibility), FUI.noEffect)
+        (model.copy(visibility = visibility), IO(Unit))
     }
   }
 

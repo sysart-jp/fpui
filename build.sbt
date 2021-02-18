@@ -1,7 +1,7 @@
 ThisBuild / name := "functional-ui"
 ThisBuild / scalaVersion := "2.13.2"
-
-val circeVersion = "0.13.0"
+lazy val circeVersion = "0.13.0"
+lazy val CatsEffectVersion = "2.3.1"
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
@@ -10,7 +10,8 @@ lazy val commonSettings = Seq(
     "io.circe" %%% "circe-core" % circeVersion,
     "io.circe" %%% "circe-generic" % circeVersion,
     "io.circe" %%% "circe-parser" % circeVersion,
-    "org.scalatest" %%% "scalatest" % "3.1.1" % Test
+    "org.scalatest" %%% "scalatest" % "3.1.1" % Test,
+    "org.typelevel" %%% "cats-effect" % CatsEffectVersion,
   ),
   npmDependencies in Compile ++= Seq(
     "react" -> "16.13.1",

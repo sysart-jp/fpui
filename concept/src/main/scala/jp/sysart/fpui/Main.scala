@@ -1,14 +1,13 @@
 package jp.sysart.fpui
 
-import scala.scalajs.js
-import scala.scalajs.LinkingInfo
+import cats.effect.IO
 import org.scalajs.dom
-
-import slinky.core._
+import org.scalajs.dom.experimental.URL
 import slinky.core.facade.ReactElement
 import slinky.hot
 import slinky.web.html._
-import org.scalajs.dom.experimental.URL
+
+import scala.scalajs.LinkingInfo
 
 object Main {
 
@@ -18,8 +17,8 @@ object Main {
 
   case class Model(messages: Seq[String], input: String)
 
-  def init(url: URL): (Model, FunctionalUI.Effect[Msg]) =
-    (Model(Seq.empty, ""), FunctionalUI.noEffect)
+  def init(url: URL): (Model, IO[_]) =
+    (Model(Seq.empty, ""), IO())
 
   //
   // UPDATE
@@ -29,15 +28,15 @@ object Main {
   case class Input(input: String) extends Msg
   case object Send extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FunctionalUI.Effect[Msg]) = {
+  def update[Msg](msg: Msg, model: Model): (Model, IO[Msg]) = {
     msg match {
       case Input(input) =>
-        (model.copy(input = input), FunctionalUI.noEffect)
+        (model.copy(input = input), IO(msg))
 
       case Send =>
         (
           model.copy(messages = model.messages :+ model.input, input = ""),
-          FunctionalUI.noEffect
+          IO(msg)
         )
     }
   }
@@ -69,7 +68,7 @@ object Main {
 
     new FunctionalUI.Runtime(
       dom.document.getElementById("root"),
-      FunctionalUI.Program(init, view, update)
+      FunctionalUI.Program(init, view, update[Any])
     )
   }
 }
