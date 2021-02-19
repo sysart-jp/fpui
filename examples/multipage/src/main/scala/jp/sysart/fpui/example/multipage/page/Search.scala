@@ -24,14 +24,9 @@ object Search {
   def init(): (Model, IO[Msg]) =
     (Model("", false, None, Seq.empty), IO(Unit))
 
-  def init(query: String): (Model, IO[Msg]) =
-  /*
-    (
-      Model(query, false, None, Seq.empty),
-      dispatch(SendQuery)
-    )
-  */
+  def init(query: String): (Model, IO[Msg]) = {
     update(SendQuery, Model(query, false, None, Seq.empty))
+  }
 
   //
   // UPDATE
@@ -52,21 +47,17 @@ object Search {
         (model.copy(query = query), IO(Unit))
 
       case SendQuery =>
+        FUI.Browser.replaceUrl(Route.searchWithQuery.url(model.query))
         (
-          model.copy(loading = true),{
-          Server.searchBooks(
-            model.query,
-            result => SearchResult(result),
-          )
-          //FUI.Browser.replaceUrl(Route.searchWithQuery.url(model.query))
-        }
+          model.copy(loading = true),
+          Server.searchBooks(model.query, result => SearchResult(result)),
         )
 
       case SearchResult(Right(books)) =>
+        FUI.Browser.replaceUrl(Route.searchWithQuery.url(model.query))
         (
           model.copy(loading = false, loadingError = None, books = books),
-          //IO(Unit)
-          FUI.Browser.replaceUrl(Route.searchWithQuery.url(model.query))
+          IO(Unit)
         )
 
       case SearchResult(Left(error)) =>
@@ -76,8 +67,8 @@ object Search {
         )
 
       case FoundItemClicked(workId) =>
-        (model,
-          Browser.pushUrl(Route.book.url(workId)))
+        Browser.pushUrl(Route.book.url(workId))
+        (model, IO(Unit))
 
       case _ => (model, IO(Unit))
     }

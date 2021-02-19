@@ -33,8 +33,19 @@ object FunctionalUI {
       val (model, effect) = change
       state = model
       ReactDOM.render(program.view(model, dispatch), container)
-      effect.unsafeRunSync()
+      program.update(effect.unsafeRunSync(), state)
     }
+
+    /*
+    object browser extends Browser {
+      override def pushUrl(url: String) = {
+        super.pushUrl(url)
+        program.onUrlChange
+          .map(_(new URL(dom.window.location.href)))
+          .map(dispatch(_))
+      }
+    }
+     */
 
     program.onUrlChange.map(onUrlChange => {
       dom.window.addEventListener(
@@ -49,16 +60,12 @@ object FunctionalUI {
   object Browser {
     implicit val ec = scala.concurrent.ExecutionContext.global
 
-    def pushUrl[Msg](url: String): IO[Msg] = IO.async {cb =>
+    def pushUrl(url: String): Unit = {
       dom.window.history.pushState((), "", url)
-      /*
-      program.onUrlChange
-        .map(_(new URL(dom.window.location.href)))
-        .map(dispatch(_))
-       */
+
     }
 
-    def replaceUrl[Msg](url: String): IO[Msg] = IO.async {cb =>
+    def replaceUrl(url: String): Unit = {
       dom.window.history.replaceState((), "", url)
     }
 

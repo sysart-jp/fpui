@@ -74,6 +74,7 @@ object Main {
   case class ChangeVisibility(visibility: String) extends Msg
 
   def update(msg: Msg, model: Model): (Model, IO[Msg]) = {
+
     msg match {
       case Add =>
         (
@@ -151,6 +152,10 @@ object Main {
 
       case ChangeVisibility(visibility) =>
         (model.copy(visibility = visibility), IO(Unit))
+
+      case _ =>
+        println("undefined message")
+        (model, IO(Unit))
     }
   }
 

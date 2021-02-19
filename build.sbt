@@ -2,11 +2,12 @@ ThisBuild / name := "functional-ui"
 ThisBuild / scalaVersion := "2.13.2"
 lazy val circeVersion = "0.13.0"
 lazy val CatsEffectVersion = "2.3.1"
+lazy val SlinkyVersion = "0.6.7"
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
-    "me.shadaj" %%% "slinky-web" % "0.6.5",
-    "me.shadaj" %%% "slinky-hot" % "0.6.5",
+    "me.shadaj" %%% "slinky-web" % SlinkyVersion,
+    "me.shadaj" %%% "slinky-hot" % SlinkyVersion,
     "io.circe" %%% "circe-core" % circeVersion,
     "io.circe" %%% "circe-generic" % circeVersion,
     "io.circe" %%% "circe-parser" % circeVersion,

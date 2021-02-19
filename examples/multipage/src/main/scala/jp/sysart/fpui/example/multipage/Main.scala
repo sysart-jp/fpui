@@ -59,7 +59,9 @@ object Main {
   case class SearchPageMsg(pageMsg: page.Search.Msg) extends Msg
   case class BookPageMsg(pageMsg: page.Book.Msg) extends Msg
 
-  def update(msg: Msg, model: Model): (Model, IO[Msg]) =
+  def update(msg: Msg, model: Model): (Model, IO[Msg]) = {
+    println(s"Msg:${msg} Model:$model")
+
     (msg, model.currentPage) match {
       case (UrlChanged(url), _) =>
         applyUrlChange(url, model)
@@ -80,8 +82,11 @@ object Main {
           model
         )
 
-      case _ => (model, IO(Unit))
+      case _ =>
+        println("undefined message")
+        (model, IO(Unit))
     }
+  }
 
   def applyUrlChange(url: URL, model: Model): (Model, IO[Msg]) =
     url.pathname + url.search + url.hash match {
