@@ -2,14 +2,16 @@ ThisBuild / name := "functional-ui"
 ThisBuild / scalaVersion := "2.13.2"
 
 val circeVersion = "0.13.0"
+val slinkyVersion = "0.6.7"
 
 lazy val commonSettings = Seq(
   libraryDependencies ++= Seq(
-    "me.shadaj" %%% "slinky-web" % "0.6.5",
-    "me.shadaj" %%% "slinky-hot" % "0.6.5",
+    "me.shadaj" %%% "slinky-web" % slinkyVersion,
+    "me.shadaj" %%% "slinky-hot" % slinkyVersion,
     "io.circe" %%% "circe-core" % circeVersion,
     "io.circe" %%% "circe-generic" % circeVersion,
     "io.circe" %%% "circe-parser" % circeVersion,
+    "org.typelevel" %%% "cats-effect" % "2.3.3",
     "org.scalatest" %%% "scalatest" % "3.1.1" % Test
   ),
   npmDependencies in Compile ++= Seq(
