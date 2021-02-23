@@ -92,5 +92,27 @@ object FunctionalUI {
     def replaceUrl(url: String) = {
       dom.window.history.replaceState((), "", url)
     }
+
+    def ajaxGet[Msg, Result](
+        url: String,
+        decoder: Decoder[Result],
+        createMsg: Either[Throwable, Result] => Msg
+    ): IO[Option[Msg]] =
+      IO.async { cb =>
+        implicit val resultDecoder = decoder
+        Ajax
+          .get(url, null, 0, Map("Accept" -> "application/json"))
+          .onComplete {
+            // Ajax, Decoder のエラーは Msg として補足するため、
+            // IO.async としてはいずれのケースも Right を返す
+            case Success(response) => {
+              val decoded = decode[Result](response.responseText)
+              cb(Right(Some(createMsg(decoded))))
+            }
+            case Failure(t) => {
+              cb(Right(Some(createMsg(Left(t)))))
+            }
+          }
+      }
   }
 }
