@@ -103,7 +103,7 @@ object FunctionalUI {
         Ajax
           .get(url, null, 0, Map("Accept" -> "application/json"))
           .onComplete {
-            // Ajax, Decoder のエラーは Msg として補足するため、
+            // Ajax, Decoder のエラーは Msg として補足したいので、
             // IO.async としてはいずれのケースも Right を返す
             case Success(response) => {
               val decoded = decode[Result](response.responseText)
