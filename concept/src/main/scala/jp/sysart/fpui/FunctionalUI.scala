@@ -3,6 +3,8 @@ package jp.sysart.fpui
 import scala.util.Success
 import scala.util.Failure
 
+import cats.effect.IO
+
 import org.scalajs.dom
 import org.scalajs.dom.Element
 import org.scalajs.dom.experimental.URL
@@ -20,16 +22,17 @@ import io.circe.parser._
 import io.circe.syntax._
 
 object FunctionalUI {
-  type Effect[Msg] = ((Msg => Unit), Browser) => Unit
-
   case class Program[Model, Msg](
-      init: (URL) => (Model, Effect[Msg]),
+      init: (URL) => (Model, IO[Option[Msg]]),
       view: (Model, Msg => Unit) => ReactElement,
-      update: (Msg, Model) => (Model, Effect[Msg]),
+      update: (Msg, Model) => (Model, IO[Option[Msg]]),
       onUrlChange: Option[URL => Msg] = None
   )
 
-  class Runtime[Model, Msg](container: Element, program: Program[Model, Msg]) {
+  class Runtime[Model, Msg](
+      container: Element,
+      val program: Program[Model, Msg]
+  ) {
     private val init = program.init(new URL(dom.window.location.href))
     private var state = init._1
 
@@ -37,21 +40,18 @@ object FunctionalUI {
       apply(program.update(msg, state))
     }
 
-    def apply(change: (Model, Effect[Msg])): Unit = {
-      val (model, effect) = change
+    def apply(change: (Model, IO[Option[Msg]])): Unit = {
+      val (model, io) = change
       state = model
       ReactDOM.render(program.view(model, dispatch), container)
-      effect(dispatch, browser)
-    }
-
-    object browser extends DefaultBrowser {
-      override def pushUrl(url: String) = {
-        super.pushUrl(url)
-        program.onUrlChange
-          .map(_(new URL(dom.window.location.href)))
-          .map(dispatch(_))
+      io.unsafeRunAsync {
+        case Right(optionMsg) => optionMsg.map(dispatch(_))
+        case Left(e)          => throw e // IO without proper error handling
       }
     }
+
+    def onPushUrl(url: URL): Unit =
+      program.onUrlChange.map(_(url)).map(dispatch(_))
 
     program.onUrlChange.map(onUrlChange => {
       dom.window.addEventListener(
@@ -63,59 +63,34 @@ object FunctionalUI {
     apply(init)
   }
 
-  def noEffect[Msg]() = (dispatch: Msg => Unit, browser: Browser) => ()
+  object Browser {
+    implicit val ec = scala.concurrent.ExecutionContext.global
 
-  trait Browser {
+    private var listenersOnPushUrl = Seq[URL => Unit]()
+
+    def runProgram[Model, Msg](
+        container: Element,
+        program: Program[Model, Msg]
+    ) = {
+      val runtime = new Runtime(container, program)
+      listenersOnPushUrl = listenersOnPushUrl :+ runtime.onPushUrl
+    }
 
     /**
       * Change the URL, but do not trigger a page load.
       * This will add a new entry to the browser history.
       */
-    def pushUrl(url: String): Unit
+    def pushUrl(url: String) = {
+      dom.window.history.pushState((), "", url)
+      listenersOnPushUrl.foreach(_(new URL(dom.window.location.href)))
+    }
 
     /**
       * Change the URL, but do not trigger a page load.
       * This will not add a new entry to the browser history.
       */
-    def replaceUrl(url: String): Unit
-
-    def ajaxGet[Msg, Result](
-        url: String,
-        decoder: Decoder[Result],
-        createMsg: Either[Throwable, Result] => Msg,
-        dispatch: Msg => Unit
-    ): Unit
-  }
-
-  class DefaultBrowser extends Browser {
-    implicit val ec = scala.concurrent.ExecutionContext.global
-
-    def pushUrl(url: String) = {
-      dom.window.history.pushState((), "", url)
-    }
-
     def replaceUrl(url: String) = {
       dom.window.history.replaceState((), "", url)
-    }
-
-    def ajaxGet[Msg, Result](
-        url: String,
-        decoder: Decoder[Result],
-        createMsg: Either[Throwable, Result] => Msg,
-        dispatch: Msg => Unit
-    ): Unit = {
-      implicit val resultDecoder = decoder
-      Ajax
-        .get(url, null, 0, Map("Accept" -> "application/json"))
-        .onComplete {
-          case Success(response) => {
-            val decoded = decode[Result](response.responseText)
-            dispatch(createMsg(decoded))
-          }
-          case Failure(t) => {
-            dispatch(createMsg(Left(t)))
-          }
-        }
     }
   }
 }

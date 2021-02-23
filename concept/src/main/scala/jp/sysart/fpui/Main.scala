@@ -4,6 +4,8 @@ import scala.scalajs.js
 import scala.scalajs.LinkingInfo
 import org.scalajs.dom
 
+import cats.effect.IO
+
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.hot
@@ -18,8 +20,8 @@ object Main {
 
   case class Model(messages: Seq[String], input: String)
 
-  def init(url: URL): (Model, FunctionalUI.Effect[Msg]) =
-    (Model(Seq.empty, ""), FunctionalUI.noEffect)
+  def init(url: URL): (Model, IO[Option[Msg]]) =
+    (Model(Seq.empty, ""), IO.none)
 
   //
   // UPDATE
@@ -29,15 +31,15 @@ object Main {
   case class Input(input: String) extends Msg
   case object Send extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FunctionalUI.Effect[Msg]) = {
+  def update(msg: Msg, model: Model): (Model, IO[Option[Msg]]) = {
     msg match {
       case Input(input) =>
-        (model.copy(input = input), FunctionalUI.noEffect)
+        (model.copy(input = input), IO.none)
 
       case Send =>
         (
           model.copy(messages = model.messages :+ model.input, input = ""),
-          FunctionalUI.noEffect
+          IO.none
         )
     }
   }
@@ -67,7 +69,7 @@ object Main {
       hot.initialize()
     }
 
-    new FunctionalUI.Runtime(
+    FunctionalUI.Browser.runProgram(
       dom.document.getElementById("root"),
       FunctionalUI.Program(init, view, update)
     )
