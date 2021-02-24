@@ -11,6 +11,8 @@ import org.scalajs.dom
 import org.scalajs.dom.experimental.URL
 import org.scalajs.dom.ext.Ajax
 
+import cats.effect.IO
+
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.hot
@@ -45,7 +47,7 @@ object Main {
   case class SearchPage(pageModel: page.Search.Model) extends Page
   case class BookPage(pageModel: page.Book.Model) extends Page
 
-  def init(url: URL): (Model, FUI.Effect[Msg]) =
+  def init(url: URL): (Model, IO[Option[Msg]]) =
     applyUrlChange(url, Model(NotFoundPage))
 
   def updatePage(page: Page, model: Model): Model =
@@ -60,7 +62,7 @@ object Main {
   case class SearchPageMsg(pageMsg: page.Search.Msg) extends Msg
   case class BookPageMsg(pageMsg: page.Book.Msg) extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
+  def update(msg: Msg, model: Model): (Model, IO[Option[Msg]]) =
     (msg, model.currentPage) match {
       case (UrlChanged(url), _) =>
         applyUrlChange(url, model)
@@ -81,10 +83,10 @@ object Main {
           model
         )
 
-      case _ => (model, FUI.noEffect)
+      case _ => (model, IO.none)
     }
 
-  def applyUrlChange(url: URL, model: Model): (Model, FUI.Effect[Msg]) =
+  def applyUrlChange(url: URL, model: Model): (Model, IO[Option[Msg]]) =
     url.pathname + url.search + url.hash match {
       case Route.searchWithQuery(q) =>
         applyPageUpdate(page.Search.init(q), SearchPage, SearchPageMsg, model)
@@ -96,28 +98,29 @@ object Main {
         applyPageUpdate(page.Book.init(id), BookPage, BookPageMsg, model)
 
       case _ =>
-        (model.copy(currentPage = NotFoundPage), FUI.noEffect)
+        (model.copy(currentPage = NotFoundPage), IO.none)
     }
 
   def applySubUpdate[SubModel, SubMsg](
-      subUpdate: (SubModel, FUI.Effect[SubMsg]),
+      subUpdate: (SubModel, IO[Option[SubMsg]]),
       applyModel: SubModel => Model,
       applyMsg: SubMsg => Msg
-  ): (Model, FUI.Effect[Msg]) = {
-    val (subModel, subEffect) = subUpdate
+  ): (Model, IO[Option[Msg]]) = {
+    val (subModel, subIO) = subUpdate
     (
       applyModel(subModel),
-      (dispatch, browser) =>
-        subEffect(subMsg => dispatch(applyMsg(subMsg)), browser)
+      subIO.flatMap(optSubMsg =>
+        IO(optSubMsg.flatMap(subMsg => Some(applyMsg(subMsg))))
+      )
     )
   }
 
   def applyPageUpdate[PageModel, PageMsg](
-      subUpdate: (PageModel, FUI.Effect[PageMsg]),
+      subUpdate: (PageModel, IO[Option[PageMsg]]),
       wrapModel: PageModel => Page,
       applyMsg: PageMsg => Msg,
       model: Model
-  ): (Model, FUI.Effect[Msg]) =
+  ): (Model, IO[Option[Msg]]) =
     applySubUpdate[PageModel, PageMsg](
       subUpdate,
       wrapModel(_).pipe(updatePage(_, model)),
@@ -154,7 +157,7 @@ object Main {
       hot.initialize()
     }
 
-    new FUI.Runtime(
+    FUI.Browser.runProgram(
       dom.document.getElementById("root"),
       FUI.Program(init, view, update, Some(UrlChanged(_)))
     )

@@ -6,6 +6,8 @@ import jp.sysart.fpui.example.multipage.Server
 
 import scala.scalajs.js
 
+import cats.effect.IO
+
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.web.html._
@@ -23,16 +25,10 @@ object Book {
       book: Option[Domain.Book]
   )
 
-  def init(workId: Int): (Model, FUI.Effect[Msg]) =
+  def init(workId: Int): (Model, IO[Option[Msg]]) =
     (
       Model(workId, true, None, None),
-      (dispatch, browser) =>
-        Server.fetchBook(
-          workId,
-          result => BookFetched(result),
-          dispatch,
-          browser
-        )
+      Server.fetchBook(workId, result => BookFetched(result))
     )
 
   //
@@ -42,16 +38,13 @@ object Book {
   sealed trait Msg
   case class BookFetched(result: Either[Throwable, Domain.Book]) extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) =
+  def update(msg: Msg, model: Model): (Model, IO[Option[Msg]]) =
     msg match {
       case BookFetched(Right(book)) =>
-        (model.copy(loading = false, book = Some(book)), FUI.noEffect)
+        (model.copy(loading = false, book = Some(book)), IO.none)
 
       case BookFetched(Left(error)) =>
-        (
-          model.copy(loading = false, loadingError = Some(error)),
-          FUI.noEffect
-        )
+        (model.copy(loading = false, loadingError = Some(error)), IO.none)
     }
 
   //

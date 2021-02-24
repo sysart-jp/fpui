@@ -2,10 +2,13 @@ package jp.sysart.fpui.example.multipage.page
 
 import jp.sysart.fpui.{FunctionalUI => FUI}
 
+import cats.effect.IO
+
 import slinky.core._
 import slinky.core.facade.ReactElement
 import slinky.web.html._
 
+import jp.sysart.fpui.{FunctionalUI => FUI}
 import jp.sysart.fpui.example.multipage.Main.Route
 import jp.sysart.fpui.example.multipage.Domain
 import jp.sysart.fpui.example.multipage.Server
@@ -23,14 +26,11 @@ object Search {
       books: Seq[Domain.Book]
   )
 
-  def init(): (Model, FUI.Effect[Msg]) =
-    (Model("", false, None, Seq.empty), FUI.noEffect)
+  def init(): (Model, IO[Option[Msg]]) =
+    (Model("", false, None, Seq.empty), IO.none)
 
-  def init(query: String): (Model, FUI.Effect[Msg]) =
-    (
-      Model(query, false, None, Seq.empty),
-      (dispatch, browser) => dispatch(SendQuery)
-    )
+  def init(query: String): (Model, IO[Option[Msg]]) =
+    (Model(query, false, None, Seq.empty), IO(Some(SendQuery)))
 
   //
   // UPDATE
@@ -43,39 +43,35 @@ object Search {
       extends Msg
   case class FoundItemClicked(workId: Int) extends Msg
 
-  def update(msg: Msg, model: Model): (Model, FUI.Effect[Msg]) = {
+  def update(msg: Msg, model: Model): (Model, IO[Option[Msg]]) = {
     msg match {
       case QueryInput(query) =>
-        (model.copy(query = query), FUI.noEffect)
+        (model.copy(query = query), IO.none)
 
       case SendQuery =>
         (
           model.copy(loading = true),
-          (dispatch, browser) => {
-            Server.searchBooks(
-              model.query,
-              result => SearchResult(result),
-              dispatch,
-              browser
+          FUI.Browser
+            .replaceUrl(Route.searchWithQuery.url(model.query))
+            .flatMap(_ =>
+              Server.searchBooks(model.query, result => SearchResult(result))
             )
-            browser.replaceUrl(Route.searchWithQuery.url(model.query))
-          }
         )
 
       case SearchResult(Right(books)) =>
         (
           model.copy(loading = false, loadingError = None, books = books),
-          FUI.noEffect
+          IO.none
         )
 
       case SearchResult(Left(error)) =>
         (
           model.copy(loading = false, loadingError = Some(error)),
-          FUI.noEffect
+          IO.none
         )
 
       case FoundItemClicked(workId) =>
-        (model, (dispatch, browser) => browser.pushUrl(Route.book.url(workId)))
+        (model, FUI.Browser.pushUrl(Route.book.url(workId)))
     }
   }
 
