@@ -80,18 +80,22 @@ object FunctionalUI {
       * Change the URL, but do not trigger a page load.
       * This will add a new entry to the browser history.
       */
-    def pushUrl(url: String) = {
-      dom.window.history.pushState((), "", url)
-      listenersOnPushUrl.foreach(_(new URL(dom.window.location.href)))
-    }
+    def pushUrl[Msg](url: String): IO[Option[Msg]] =
+      IO {
+        dom.window.history.pushState((), "", url)
+        listenersOnPushUrl.foreach(_(new URL(dom.window.location.href)))
+        None
+      }
 
     /**
       * Change the URL, but do not trigger a page load.
       * This will not add a new entry to the browser history.
       */
-    def replaceUrl(url: String) = {
-      dom.window.history.replaceState((), "", url)
-    }
+    def replaceUrl[Msg](url: String): IO[Option[Msg]] =
+      IO {
+        dom.window.history.replaceState((), "", url)
+        None
+      }
 
     def ajaxGet[Msg, Result](
         url: String,
