@@ -66,14 +66,14 @@ object FunctionalUI {
   object Browser {
     implicit val ec = scala.concurrent.ExecutionContext.global
 
-    private var listenersOnPushUrl = Seq[URL => Unit]()
+    private var listenersOnPushUrl: List[URL => Unit] = Nil
 
     def runProgram[Model, Msg](
         container: Element,
         program: Program[Model, Msg]
     ) = {
       val runtime = new Runtime(container, program)
-      listenersOnPushUrl = listenersOnPushUrl :+ runtime.onPushUrl
+      listenersOnPushUrl = runtime.onPushUrl _ :: listenersOnPushUrl
     }
 
     /**
